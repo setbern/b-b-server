@@ -1,5 +1,5 @@
 import fetch from "node-fetch";
-const STACKS_API = "https://stacks-node-api.mainnet.stacks.co/";
+export const STACKS_API = "https://stacks-node-api.mainnet.stacks.co/";
 
 //https://stacks-node-api.mainnet.stacks.co/extended/v1/address/{principal}/transactions
 
@@ -23,5 +23,30 @@ export const getContractLatestTX = async () => {
     }
   } catch (err) {
     console.log("getContractLatestTX", err);
+  }
+};
+
+export const getBnsName = async (prinicpal: string) => {
+  try {
+    const address = prinicpal;
+    if (!address) {
+      return;
+    }
+    return fetch(
+      `https://stacks-node-api.mainnet.stacks.co/v1/addresses/stacks/${address}`
+    )
+      .then((res) => {
+        if (res.ok) {
+          return res.json();
+        }
+      })
+      .then(({ names }) => {
+        return names[0].toLowerCase();
+      })
+      .catch(() => null);
+  } catch (err) {
+    console.log("getBnsName", err);
+
+    return undefined;
   }
 };

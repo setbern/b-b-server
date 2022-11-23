@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.fetchAllTiles = exports.AddNewtile = void 0;
 const __1 = require("..");
 const redis_1 = __importDefault(require("../redis"));
+const stacks_1 = require("../stacks");
 const testTilesContractKey = "TEST:APPROVED";
 const AddNewtile = async (params) => {
     try {
@@ -22,9 +23,11 @@ const AddNewtile = async (params) => {
         });
         const iNeedToCleanThisUp = _tileShit.map((d) => JSON.stringify(d));
         const addTile = await redis_1.default.lPush(testTilesContractKey, iNeedToCleanThisUp);
+        const bnsName = await (0, stacks_1.getBnsName)(principal);
+        console.log("bnsName", bnsName);
         const latestTiles = {
             txId: txId,
-            principal: principal,
+            principal: bnsName || principal,
             tiles: tiles,
             created_at: Date.now(),
         };
@@ -66,6 +69,7 @@ const fetchAllTiles = async () => {
                 }
                 return acc;
             }, []);
+            console.log("selectedTiles", selectedTiles);
             return selectedTiles;
         }
         else {

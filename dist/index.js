@@ -93,7 +93,7 @@ const startServer = () => {
             const subscribeClient = redis_1.default.duplicate();
             redis_1.default.on("error", (err) => {
                 console.error(`Redis subscribeClient  error: ${err}`);
-                redis_1.default.connect();
+                //redis.connect();
             });
             redis_1.default.on("reconnecting", (params) => console.info(`Redis subscribeClient reconnecting, attempt ${params.attempt}`));
             redis_1.default.on("connect", () => console.info("Redis subscribeClient connected"));

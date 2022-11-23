@@ -9,7 +9,7 @@ const redis = (0, redis_1.createClient)({
         keepAlive: 900000000000,
         reconnectStrategy() {
             console.log("reconnectStrategy");
-            console.timeLog("reconnectStrategy", "reconnectStrategy");
+            console.log("reconnectStrategy", "reconnectStrategy");
             return 3000;
         },
     },

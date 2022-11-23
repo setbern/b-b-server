@@ -1,5 +1,6 @@
 import { PostTilesQuery, TEST_REDIS_CHANNEL } from "..";
 import redis from "../redis";
+import { getBnsName, STACKS_API } from "../stacks";
 
 type Tile = {
   position: number;
@@ -37,12 +38,16 @@ export const AddNewtile = async (params: AddNewTileProps) => {
     const iNeedToCleanThisUp = _tileShit.map((d) => JSON.stringify(d));
     const addTile = await redis.lPush(testTilesContractKey, iNeedToCleanThisUp);
 
+    const bnsName = await getBnsName(principal);
+
+    console.log("bnsName", bnsName);
     const latestTiles = {
       txId: txId,
-      principal: principal,
+      principal: bnsName || principal,
       tiles: tiles,
       created_at: Date.now(),
     };
+
     redis.publish(TEST_REDIS_CHANNEL, JSON.stringify(latestTiles));
 
     return { status: "yeet" };
@@ -100,6 +105,7 @@ export const fetchAllTiles = async () => {
         return acc;
       }, [] as SELECTED_TILE[]);
 
+      console.log("selectedTiles", selectedTiles);
       return selectedTiles;
     } else {
       throw new Error(":(");

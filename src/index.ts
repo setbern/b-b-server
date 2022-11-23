@@ -136,13 +136,14 @@ const startServer = () => {
 
       redis.on("error", (err) => {
         console.error(`Redis subscribeClient  error: ${err}`);
-        redis.connect();
+        //redis.connect();
       });
       redis.on("reconnecting", (params) =>
         console.info(
           `Redis subscribeClient reconnecting, attempt ${params.attempt}`
         )
       );
+
       redis.on("connect", () =>
         console.info("Redis subscribeClient connected")
       );

@@ -8,7 +8,7 @@ const redis = createClient({
     keepAlive: 900000000000,
     reconnectStrategy() {
       console.log("reconnectStrategy");
-      console.timeLog("reconnectStrategy", "reconnectStrategy");
+      console.log("reconnectStrategy", "reconnectStrategy");
       return 3000;
     },
   },
@@ -18,6 +18,7 @@ redis.on("error", (err) => {
   console.error(`Redis error: ${err}`);
   //redis.connect();
 });
+
 redis.on("reconnecting", (params) =>
   console.info(`Redis reconnecting, attempt ${params.attempt}`)
 );
