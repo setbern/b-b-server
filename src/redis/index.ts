@@ -17,21 +17,16 @@ const redis = createClient({
 redis.on("error", (err) => {
   console.error(`Redis error: ${err}`);
   //redis.connect();
-  setInterval((client) => {
-    redis.ping();
-  }, 9 * 1000 * 60);
 });
 redis.on("reconnecting", (params) =>
   console.info(`Redis reconnecting, attempt ${params.attempt}`)
 );
 redis.on("connect", () => {
   console.info("Redis connected");
-
-  // setInterval(client => {
-  //   client.ping((err: any) => {
-  //     if (err) console.error('Redis keepalive error', err);
-  //   });
-  // }, X);
+  setInterval((client) => {
+    console.log("ping");
+    redis.ping();
+  }, 9 * 1000 * 60);
 });
 redis.on("ready", () => console.info("Redis ready"));
 redis.on("end", () => console.info("Redis connection closed"));
