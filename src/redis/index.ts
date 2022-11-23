@@ -26,7 +26,7 @@ redis.on("connect", () => {
   setInterval((client) => {
     console.log("ping");
     redis.ping();
-  }, 9 * 1000 * 60);
+  }, 20000);
 });
 redis.on("ready", () => console.info("Redis ready"));
 redis.on("end", () => console.info("Redis connection closed"));
