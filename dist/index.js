@@ -12,8 +12,8 @@ const redis_1 = __importDefault(require("./redis"));
 const Tile_1 = require("./modules/Tile");
 const isHeroku = process.env.NODE_ENV === "production";
 const port = isHeroku ? parseInt(process.env.PORT || "3001", 10) || 3001 : 3001;
-//url: "redis://:p6d65d5475e414c8d356de3af5d32afc7767b37ac3c0107704e9966fa5bdb3499@ec2-54-204-184-129.compute-1.amazonaws.com:30669",
-// add fasitfy cors plugin to allow cross origin requests from specfic urls
+console.log("isHeroku", isHeroku);
+console.log("prot", port);
 exports.TEST_REDIS_CHANNEL = "b-b-board";
 const startServer = () => {
     const server = (0, fastify_1.default)({
@@ -91,7 +91,11 @@ const startServer = () => {
         (async () => {
             console.log("when does this run");
             const subscribeClient = redis_1.default.duplicate();
-            redis_1.default.on("error in the duplicate", (err) => console.error("client err", err));
+            redis_1.default.on("error", (err) => console.error(`Redis subscribeClient  error: ${err}`));
+            redis_1.default.on("reconnecting", (params) => console.info(`Redis subscribeClient reconnecting, attempt ${params.attempt}`));
+            redis_1.default.on("connect", () => console.info("Redis subscribeClient connected"));
+            redis_1.default.on("ready", () => console.info("Redis subscribeClient ready"));
+            redis_1.default.on("end", () => console.info("Redis subscribeClient connection closed"));
             await redis_1.default.connect();
             await subscribeClient.connect();
             await subscribeClient.subscribe("b-b-board", async (tiles) => {
@@ -102,7 +106,7 @@ const startServer = () => {
             });
         })();
     });
-    server.listen({ port: 3001, host: "0.0.0.0" }, (err, address) => {
+    server.listen({ port: port, host: "0.0.0.0" }, (err, address) => {
         if (err) {
             console.error(err);
             process.exit(1);
