@@ -6,12 +6,18 @@ const redis = (0, redis_1.createClient)({
     socket: {
         tls: true,
         rejectUnauthorized: false,
-        keepAlive: 120,
+        keepAlive: 900000000000,
+        reconnectStrategy() {
+            console.timeLog("reconnectStrategy", "reconnectStrategy");
+            return 3000;
+        },
     },
 });
 redis.on("error", (err) => console.error(`Redis error: ${err}`));
 redis.on("reconnecting", (params) => console.info(`Redis reconnecting, attempt ${params.attempt}`));
-redis.on("connect", () => console.info("Redis connected"));
+redis.on("connect", () => {
+    console.info("Redis connected");
+});
 redis.on("ready", () => console.info("Redis ready"));
 redis.on("end", () => console.info("Redis connection closed"));
 exports.default = redis;
