@@ -1,7 +1,7 @@
 import { createClient } from "redis";
 
 const redis = createClient({
-  url: process.env.REIDS_URL,
+  url: process.env.REDIS_URL,
   socket: {
     tls: true,
     rejectUnauthorized: false,

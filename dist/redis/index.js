@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const redis_1 = require("redis");
 const redis = (0, redis_1.createClient)({
-    url: process.env.REIDS_URL,
+    url: process.env.REDIS_URL,
     socket: {
         tls: true,
         rejectUnauthorized: false,
