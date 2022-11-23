@@ -41,14 +41,6 @@
   resolved "https://registry.yarnpkg.com/@fastify/type-provider-typebox/-/type-provider-typebox-2.3.0.tgz#4adb4a9cd3ccdbc5b2506852f3cec9554d678425"
   integrity sha512-arEH1FL6CNTgctoVw++jNPJN9DdzUe7rJlb3XJyw7rAGiT2m402P4GMFVhtDqndQzEJN37UJXVYbCR9D0AahgQ==
 
-"@fastify/websocket@^5.0.0":
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/@fastify/websocket/-/websocket-5.0.1.tgz#03c69e70988c3a8b88a8cf38036e1aeed0b3b13a"
-  integrity sha512-voOrfqhj9TIEnviQ9lzGBXdCIpIJpK69HLgvPPv7m9JNQ7GfSJAbG2y6YRuoYk8u6zpDuleHoLCmaJBDl5Chtw==
-  dependencies:
-    fastify-plugin "^3.0.0"
-    ws "^8.0.0"
-
 "@noble/hashes@^1.0.0", "@noble/hashes@^1.1.2":
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.1.3.tgz#360afc77610e0a61f3417e497dcf36862e4f8111"

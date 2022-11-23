@@ -1,5 +1,4 @@
 import "./env";
-import ws from "@fastify/websocket";
 
 import fastify from "fastify";
 import cors, { fastifyCors } from "@fastify/cors";
@@ -7,8 +6,6 @@ import fastifyIO from "fastify-socket.io";
 
 import { startUpWebSocket } from "./websockets";
 import { getContractLatestTX } from "./stacks";
-import { createContext } from "./context";
-import { appRouter } from "./router";
 
 import redis from "./redis";
 import { getTileRepository } from "./models/Tile";
