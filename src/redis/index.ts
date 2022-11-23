@@ -23,6 +23,12 @@ redis.on("reconnecting", (params) =>
 );
 redis.on("connect", () => {
   console.info("Redis connected");
+
+  // setInterval(client => {
+  //   client.ping((err: any) => {
+  //     if (err) console.error('Redis keepalive error', err);
+  //   });
+  // }, X);
 });
 redis.on("ready", () => console.info("Redis ready"));
 redis.on("end", () => console.info("Redis connection closed"));
