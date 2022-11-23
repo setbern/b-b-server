@@ -91,7 +91,10 @@ const startServer = () => {
         (async () => {
             console.log("when does this run");
             const subscribeClient = redis_1.default.duplicate();
-            redis_1.default.on("error", (err) => console.error(`Redis subscribeClient  error: ${err}`));
+            redis_1.default.on("error", (err) => {
+                console.error(`Redis subscribeClient  error: ${err}`);
+                redis_1.default.connect();
+            });
             redis_1.default.on("reconnecting", (params) => console.info(`Redis subscribeClient reconnecting, attempt ${params.attempt}`));
             redis_1.default.on("connect", () => console.info("Redis subscribeClient connected"));
             redis_1.default.on("ready", () => console.info("Redis subscribeClient ready"));
@@ -99,7 +102,6 @@ const startServer = () => {
             await redis_1.default.connect();
             await subscribeClient.connect();
             await subscribeClient.subscribe("b-b-board", async (tiles) => {
-                console.log("tiles", tiles);
                 server.io
                     .to(exports.TEST_REDIS_CHANNEL)
                     .emit("b-b-board", { latestTiles: tiles });

@@ -7,13 +7,17 @@ const redis = createClient({
     rejectUnauthorized: false,
     keepAlive: 900000000000,
     reconnectStrategy() {
+      console.log("reconnectStrategy");
       console.timeLog("reconnectStrategy", "reconnectStrategy");
       return 3000;
     },
   },
 });
 
-redis.on("error", (err) => console.error(`Redis error: ${err}`));
+redis.on("error", (err) => {
+  console.error(`Redis error: ${err}`);
+  redis.connect();
+});
 redis.on("reconnecting", (params) =>
   console.info(`Redis reconnecting, attempt ${params.attempt}`)
 );
@@ -22,4 +26,5 @@ redis.on("connect", () => {
 });
 redis.on("ready", () => console.info("Redis ready"));
 redis.on("end", () => console.info("Redis connection closed"));
+
 export default redis;

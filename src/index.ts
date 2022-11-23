@@ -134,9 +134,10 @@ const startServer = () => {
       console.log("when does this run");
       const subscribeClient = redis.duplicate();
 
-      redis.on("error", (err) =>
-        console.error(`Redis subscribeClient  error: ${err}`)
-      );
+      redis.on("error", (err) => {
+        console.error(`Redis subscribeClient  error: ${err}`);
+        redis.connect();
+      });
       redis.on("reconnecting", (params) =>
         console.info(
           `Redis subscribeClient reconnecting, attempt ${params.attempt}`
@@ -154,8 +155,6 @@ const startServer = () => {
       await subscribeClient.connect();
 
       await subscribeClient.subscribe("b-b-board", async (tiles: string) => {
-        console.log("tiles", tiles);
-
         server.io
           .to(TEST_REDIS_CHANNEL)
           .emit("b-b-board", { latestTiles: tiles });
