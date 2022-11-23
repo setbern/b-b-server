@@ -16,7 +16,10 @@ const redis = (0, redis_1.createClient)({
 });
 redis.on("error", (err) => {
     console.error(`Redis error: ${err}`);
-    redis.connect();
+    //redis.connect();
+    setInterval((client) => {
+        redis.ping();
+    }, 9 * 1000 * 60);
 });
 redis.on("reconnecting", (params) => console.info(`Redis reconnecting, attempt ${params.attempt}`));
 redis.on("connect", () => {
