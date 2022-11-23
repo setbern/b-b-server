@@ -49,12 +49,12 @@ const startServer = () => {
   });
 
   server.register(fastifyCors, {
-    origin: "http://localhost:3000",
+    origin: ["http://localhost:3000", "https://badger-board.vercel.app"],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   });
   server.register(fastifyIO, {
     cors: {
-      origin: "http://localhost:3000",
+      origin: ["http://localhost:3000", "https://badger-board.vercel.app"],
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     },
   });
