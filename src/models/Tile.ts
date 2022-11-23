@@ -1,37 +1,37 @@
-import { Entity, Schema, Repository, Client } from "redis-om";
-import redis from "../redis";
+// import { Entity, Schema, Repository, Client } from "redis-om";
+// import redis from "../redis";
 
-interface Tile {
-  tileId: number;
-  txId: string;
-  wallet: string;
-  color: string;
-  created_at: number;
-}
+// interface Tile {
+//   tileId: number;
+//   txId: string;
+//   wallet: string;
+//   color: string;
+//   created_at: number;
+// }
 
-class Tile extends Entity {}
+// class Tile extends Entity {}
 
-const TileSchema = new Schema(
-  Tile,
-  {
-    tileId: { type: "number" },
-    txId: { type: "string" },
-    wallet: { type: "string" },
-    color: { type: "string" },
-    created_at: { type: "number" },
-  },
-  {
-    dataStructure: "JSON",
-  }
-);
+// const TileSchema = new Schema(
+//   Tile,
+//   {
+//     tileId: { type: "number" },
+//     txId: { type: "string" },
+//     wallet: { type: "string" },
+//     color: { type: "string" },
+//     created_at: { type: "number" },
+//   },
+//   {
+//     dataStructure: "JSON",
+//   }
+// );
 
-export const getTileRepository = async () => {
-  const redisOm = await new Client().use(redis);
+// export const getTileRepository = async () => {
+//   const redisOm = await new Client().use(redis);
 
-  const thing = redisOm.fetchRepository(TileSchema);
-  await thing.createIndex();
+//   const thing = redisOm.fetchRepository(TileSchema);
+//   await thing.createIndex();
 
-  return thing;
-};
+//   return thing;
+// };
 
-export { Tile, TileSchema };
+// export { Tile, TileSchema };

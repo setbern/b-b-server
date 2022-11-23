@@ -8,7 +8,6 @@ import { startUpWebSocket } from "./websockets";
 import { getContractLatestTX } from "./stacks";
 
 import redis from "./redis";
-import { getTileRepository } from "./models/Tile";
 import {
   AddNewtile,
   CleanTiles,
@@ -19,9 +18,8 @@ import {
 const isHeroku = process.env.NODE_ENV === "production";
 const port = isHeroku ? parseInt(process.env.PORT || "3001", 10) || 3001 : 3001;
 
-//url: "redis://:p6d65d5475e414c8d356de3af5d32afc7767b37ac3c0107704e9966fa5bdb3499@ec2-54-204-184-129.compute-1.amazonaws.com:30669",
-
-// add fasitfy cors plugin to allow cross origin requests from specfic urls
+console.log("isHeroku", isHeroku);
+console.log("prot", port);
 
 export const TEST_REDIS_CHANNEL = "b-b-board";
 
@@ -135,8 +133,21 @@ const startServer = () => {
     (async () => {
       console.log("when does this run");
       const subscribeClient = redis.duplicate();
-      redis.on("error in the duplicate", (err) =>
-        console.error("client err", err)
+
+      redis.on("error", (err) =>
+        console.error(`Redis subscribeClient  error: ${err}`)
+      );
+      redis.on("reconnecting", (params) =>
+        console.info(
+          `Redis subscribeClient reconnecting, attempt ${params.attempt}`
+        )
+      );
+      redis.on("connect", () =>
+        console.info("Redis subscribeClient connected")
+      );
+      redis.on("ready", () => console.info("Redis subscribeClient ready"));
+      redis.on("end", () =>
+        console.info("Redis subscribeClient connection closed")
       );
 
       await redis.connect();
