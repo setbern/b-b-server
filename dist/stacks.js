@@ -3,9 +3,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getBnsName = exports.getContractLatestTX = exports.STACKS_API = void 0;
+exports.getLatestTxFromBoard = exports.getLatestBlocks = exports.getBlockInfo = exports.getBnsName = exports.getContractLatestTX = exports.CONTRACT_NAME = exports.CONTRACT_ADDRESSS = exports.STACKS_API = void 0;
 const node_fetch_1 = __importDefault(require("node-fetch"));
 exports.STACKS_API = "https://stacks-node-api.mainnet.stacks.co/";
+exports.CONTRACT_ADDRESSS = "SP25VWGTPR19E344S4ENTHQT8651216EPNABRYE51";
+exports.CONTRACT_NAME = "bos-board-test";
 //https://stacks-node-api.mainnet.stacks.co/extended/v1/address/{principal}/transactions
 const getContractLatestTX = async () => {
     try {
@@ -50,4 +52,61 @@ const getBnsName = async (prinicpal) => {
     }
 };
 exports.getBnsName = getBnsName;
+const getBlockInfo = async (block) => {
+    try {
+        const blockInfo = await (0, node_fetch_1.default)(`${exports.STACKS_API}extended/block/by_height/${block}`)
+            .then((res) => res.text())
+            .then((text) => text);
+        if (blockInfo) {
+            const clean = JSON.parse(blockInfo);
+            return clean;
+        }
+        else {
+            return null;
+        }
+    }
+    catch (err) {
+        console.log("getBlockInfo", err);
+        return null;
+    }
+};
+exports.getBlockInfo = getBlockInfo;
+const getLatestBlocks = async () => {
+    try {
+        const latestBlocksRes = await (0, node_fetch_1.default)(`${exports.STACKS_API}extended/v1/block`)
+            .then((res) => res.text())
+            .then((text) => text);
+        if (latestBlocksRes) {
+            const clean = JSON.parse(latestBlocksRes);
+            return clean;
+        }
+        else {
+            return null;
+        }
+    }
+    catch (err) {
+        console.log("getLatestBlocks err", err);
+        return null;
+    }
+};
+exports.getLatestBlocks = getLatestBlocks;
+const getLatestTxFromBoard = async (offset) => {
+    try {
+        const latestContractTx = await (0, node_fetch_1.default)(`${exports.STACKS_API}extended/v1/address/${exports.CONTRACT_ADDRESSS}.${exports.CONTRACT_NAME}/transactions?unanchored=true`)
+            .then((res) => res.text())
+            .then((text) => text);
+        if (latestContractTx) {
+            const clean = JSON.parse(latestContractTx);
+            return clean;
+        }
+        else {
+            return null;
+        }
+    }
+    catch (err) {
+        console.log("getLatestTxFromBoard err", err);
+        return null;
+    }
+};
+exports.getLatestTxFromBoard = getLatestTxFromBoard;
 //# sourceMappingURL=stacks.js.map

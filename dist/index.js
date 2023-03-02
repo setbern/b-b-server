@@ -8,12 +8,14 @@ require("./env");
 const fastify_1 = __importDefault(require("fastify"));
 const cors_1 = require("@fastify/cors");
 const fastify_socket_io_1 = __importDefault(require("fastify-socket.io"));
+const websockets_1 = require("./websockets");
 const redis_1 = __importDefault(require("./redis"));
 const Tile_1 = require("./modules/Tile");
+const collection_1 = require("./modules/collection");
 const isHeroku = process.env.NODE_ENV === "production";
 const port = isHeroku ? parseInt(process.env.PORT || "3001", 10) || 3001 : 3001;
 console.log("isHeroku", isHeroku);
-console.log("prot", port);
+console.log("port", port);
 exports.TEST_REDIS_CHANNEL = "b-b-board";
 const startServer = () => {
     const server = (0, fastify_1.default)({
@@ -38,7 +40,73 @@ const startServer = () => {
         const tiles = await (0, Tile_1.fetchAllTiles)();
         reply.send({ tiles });
     });
-    server.post("/post-tiles", {
+    server.post("/newCollection", {}, async (req, reply) => {
+        return (0, collection_1.createNewCollection)();
+    });
+    server.post("/checkPending", {}, async (req, reply) => {
+        return (0, collection_1.checkPendingTiles)();
+    });
+    server.post("/startCollection", {
+        preValidation: (req, reply, done) => {
+            console.log("req.body", req.body);
+            const { collectionId } = req.body;
+            if (!collectionId) {
+                reply.code(400).send({ status: "missing collectionId" });
+                return;
+            }
+            done();
+        },
+    }, async (req, reply) => {
+        const { collectionId } = req.body;
+        return (0, collection_1.startCollection)(collectionId);
+    });
+    /*
+    server.post<{
+      Body: string;
+      Headers: BBHeaders;
+      Reply: { status: string };
+    }>(
+      "/post-tiles",
+      {
+        preValidation: (req, reply, done) => {
+          console.log("req body", req.body);
+          const { txId, principal, tiles, collection } = JSON.parse(req.body);
+          // check if their is a missing field and return a 400 with the missing one
+  
+          console.log("txId", txId);
+          if (!txId) {
+            reply.code(400).send({ status: "missing txId" });
+            return;
+          }
+          if (!principal) {
+            reply.code(400).send({ status: "missing principal" });
+            return;
+          }
+          if (!tiles) {
+            reply.code(400).send({ status: "missing tiles" });
+            return;
+          }
+          if (!collection) {
+            reply.code(400).send({ status: "missing collection" });
+            return;
+          }
+          done();
+        },
+      },
+      async (req, reply) => {
+        const { txId, principal, tiles, collection } = JSON.parse(req.body);
+  
+        return AddNewtile({
+          txId,
+          principal,
+          tiles,
+          collection,
+          server,
+        });
+      }
+    );
+    */
+    server.post("/tiles-post", {
         preValidation: (req, reply, done) => {
             console.log("req body", req.body);
             const { txId, principal, tiles, collection } = JSON.parse(req.body);
@@ -64,7 +132,7 @@ const startServer = () => {
         },
     }, async (req, reply) => {
         const { txId, principal, tiles, collection } = JSON.parse(req.body);
-        return (0, Tile_1.AddNewtile)({
+        return (0, Tile_1._addNewTile)({
             txId,
             principal,
             tiles,
@@ -93,7 +161,7 @@ const startServer = () => {
             const subscribeClient = redis_1.default.duplicate();
             redis_1.default.on("error", (err) => {
                 console.error(`Redis subscribeClient  error: ${err}`);
-                //redis.connect();
+                redis_1.default.connect();
             });
             redis_1.default.on("reconnecting", (params) => console.info(`Redis subscribeClient reconnecting, attempt ${params.attempt}`));
             redis_1.default.on("connect", () => console.info("Redis subscribeClient connected"));
@@ -106,6 +174,11 @@ const startServer = () => {
                     .to(exports.TEST_REDIS_CHANNEL)
                     .emit("b-b-board", { latestTiles: tiles });
             });
+            await subscribeClient.subscribe("b-b-board-pending", async (tiles) => {
+                server.io
+                    .to(exports.TEST_REDIS_CHANNEL)
+                    .emit("b-b-board-pending", { latestTiles: tiles });
+            });
         })();
     });
     server.listen({ port: port, host: "0.0.0.0" }, (err, address) => {
@@ -114,6 +187,9 @@ const startServer = () => {
             process.exit(1);
         }
         console.log(`Server listening at ${address}`);
+        (0, websockets_1.startUpWebSocket)();
+        //checkLatestSuccesfultx();
+        //checkPendingTiles()
     });
 };
 startServer();

@@ -9,17 +9,24 @@ import { getContractLatestTX } from "./stacks";
 
 import redis from "./redis";
 import {
-  AddNewtile,
   CleanTiles,
+  EXISTING_SELECTED_TILE,
   fetchAllTiles,
   SELECTED_TILE,
+  _addNewTile,
 } from "./modules/Tile";
+import {
+  checkLatestSuccesfultx,
+  checkPendingTiles,
+  createNewCollection,
+  startCollection,
+} from "./modules/collection";
 
 const isHeroku = process.env.NODE_ENV === "production";
 const port = isHeroku ? parseInt(process.env.PORT || "3001", 10) || 3001 : 3001;
 
 console.log("isHeroku", isHeroku);
-console.log("prot", port);
+console.log("port", port);
 
 export const TEST_REDIS_CHANNEL = "b-b-board";
 
@@ -60,11 +67,46 @@ const startServer = () => {
   });
 
   server.get<{
-    Reply: { tiles: SELECTED_TILE[] };
+    Reply: { tiles: EXISTING_SELECTED_TILE };
   }>("/tiles", {}, async (request, reply) => {
     const tiles = await fetchAllTiles();
     reply.send({ tiles });
   });
+
+  server.post<{
+    Reply: { status: string; collectionId: number };
+  }>("/newCollection", {}, async (req, reply) => {
+    return createNewCollection();
+  });
+
+  server.post<{
+    Reply: { status: string };
+  }>("/checkPending", {}, async (req, reply) => {
+    return checkPendingTiles();
+  });
+
+  server.post<{
+    Reply: { status: string };
+    Body: string;
+  }>(
+    "/startCollection",
+    {
+      preValidation: (req, reply, done) => {
+        console.log("req.body", req.body);
+        const { collectionId } = req.body as any;
+        if (!collectionId) {
+          reply.code(400).send({ status: "missing collectionId" });
+          return;
+        }
+        done();
+      },
+    },
+    async (req, reply) => {
+      const { collectionId } = req.body as any;
+      return startCollection(collectionId);
+    }
+  );
+  /*
   server.post<{
     Body: string;
     Headers: BBHeaders;
@@ -109,6 +151,51 @@ const startServer = () => {
       });
     }
   );
+  */
+  server.post<{
+    Body: string;
+    Headers: BBHeaders;
+    Reply: { status: string };
+  }>(
+    "/tiles-post",
+    {
+      preValidation: (req, reply, done) => {
+        console.log("req body", req.body);
+        const { txId, principal, tiles, collection } = JSON.parse(req.body);
+        // check if their is a missing field and return a 400 with the missing one
+
+        console.log("txId", txId);
+        if (!txId) {
+          reply.code(400).send({ status: "missing txId" });
+          return;
+        }
+        if (!principal) {
+          reply.code(400).send({ status: "missing principal" });
+          return;
+        }
+        if (!tiles) {
+          reply.code(400).send({ status: "missing tiles" });
+          return;
+        }
+        if (!collection) {
+          reply.code(400).send({ status: "missing collection" });
+          return;
+        }
+        done();
+      },
+    },
+    async (req, reply) => {
+      const { txId, principal, tiles, collection } = JSON.parse(req.body);
+
+      return _addNewTile({
+        txId,
+        principal,
+        tiles,
+        collection,
+        server,
+      });
+    }
+  );
   server.get("/", (req, reply) => {
     server.io.to("room1").emit("message", { hello: "world" });
     return "yeet";
@@ -136,7 +223,7 @@ const startServer = () => {
 
       redis.on("error", (err) => {
         console.error(`Redis subscribeClient  error: ${err}`);
-        //redis.connect();
+        redis.connect();
       });
       redis.on("reconnecting", (params) =>
         console.info(
@@ -160,6 +247,15 @@ const startServer = () => {
           .to(TEST_REDIS_CHANNEL)
           .emit("b-b-board", { latestTiles: tiles });
       });
+
+      await subscribeClient.subscribe(
+        "b-b-board-pending",
+        async (tiles: string) => {
+          server.io
+            .to(TEST_REDIS_CHANNEL)
+            .emit("b-b-board-pending", { latestTiles: tiles });
+        }
+      );
     })();
   });
 
@@ -169,6 +265,9 @@ const startServer = () => {
       process.exit(1);
     }
     console.log(`Server listening at ${address}`);
+    startUpWebSocket();
+    //checkLatestSuccesfultx();
+    //checkPendingTiles()
   });
 };
 
