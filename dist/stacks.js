@@ -6,8 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getLatestTxFromBoard = exports.getLatestBlocks = exports.getBlockInfo = exports.getBnsName = exports.getContractLatestTX = exports.CONTRACT_NAME = exports.CONTRACT_ADDRESSS = exports.STACKS_API = void 0;
 const node_fetch_1 = __importDefault(require("node-fetch"));
 exports.STACKS_API = "https://stacks-node-api.mainnet.stacks.co/";
-exports.CONTRACT_ADDRESSS = "SP25VWGTPR19E344S4ENTHQT8651216EPNABRYE51";
-exports.CONTRACT_NAME = "bos-board-test";
+exports.CONTRACT_ADDRESSS = "SP68D5TNN9JH6G582VK824XR47VQABPAZSK9C1SD";
+exports.CONTRACT_NAME = "bos-board";
 //https://stacks-node-api.mainnet.stacks.co/extended/v1/address/{principal}/transactions
 const getContractLatestTX = async () => {
     try {

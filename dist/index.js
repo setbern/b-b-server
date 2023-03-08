@@ -13,7 +13,8 @@ const redis_1 = __importDefault(require("./redis"));
 const Tile_1 = require("./modules/Tile");
 const collection_1 = require("./modules/collection");
 const isHeroku = process.env.NODE_ENV === "production";
-const port = isHeroku ? parseInt(process.env.PORT || "3001", 10) || 3001 : 3001;
+const localPot = 3002;
+const port = isHeroku ? parseInt(process.env.PORT || "3001", 10) || 3002 : 3002;
 console.log("isHeroku", isHeroku);
 console.log("port", port);
 exports.TEST_REDIS_CHANNEL = "b-b-board";
@@ -27,12 +28,20 @@ const startServer = () => {
         },
     });
     server.register(cors_1.fastifyCors, {
-        origin: ["http://localhost:3000", "https://badger-board.vercel.app"],
+        origin: [
+            "http://localhost:3000",
+            "http://localhost:3001",
+            "https://badger-board.vercel.app",
+        ],
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     });
     server.register(fastify_socket_io_1.default, {
         cors: {
-            origin: ["http://localhost:3000", "https://badger-board.vercel.app"],
+            origin: [
+                "http://localhost:3000",
+                "http://localhost:3001",
+                "https://badger-board.vercel.app",
+            ],
             methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
         },
     });
@@ -160,8 +169,8 @@ const startServer = () => {
             console.log("when does this run");
             const subscribeClient = redis_1.default.duplicate();
             redis_1.default.on("error", (err) => {
-                console.error(`Redis subscribeClient  error: ${err}`);
-                redis_1.default.connect();
+                console.error(`Redis subscribeClient  err ${err}`);
+                //redis.connect();
             });
             redis_1.default.on("reconnecting", (params) => console.info(`Redis subscribeClient reconnecting, attempt ${params.attempt}`));
             redis_1.default.on("connect", () => console.info("Redis subscribeClient connected"));
@@ -188,8 +197,7 @@ const startServer = () => {
         }
         console.log(`Server listening at ${address}`);
         (0, websockets_1.startUpWebSocket)();
-        //checkLatestSuccesfultx();
-        //checkPendingTiles()
+        (0, collection_1.checkLatestSuccesfultx)();
     });
 };
 startServer();

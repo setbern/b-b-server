@@ -6,6 +6,9 @@ const collection_1 = require("./modules/collection");
 const startUpWebSocket = async () => {
     const client = await (0, blockchain_api_client_1.connectWebSocketClient)("wss://stacks-node-api.mainnet.stacks.co/");
     //console.log("client", client);
+    const microblock = await client.subscribeMicroblocks((event) => {
+        (0, collection_1.checkLatestSuccesfultx)();
+    });
     const blocks = await client.subscribeBlocks((event) => {
         (0, collection_1.checkLatestSuccesfultx)();
     });
