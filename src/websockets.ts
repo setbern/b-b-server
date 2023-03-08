@@ -10,6 +10,9 @@ export const startUpWebSocket = async () => {
   );
   //console.log("client", client);
 
+  const microblock = await client.subscribeMicroblocks((event: any) => {
+    checkLatestSuccesfultx();
+  });
   const blocks = await client.subscribeBlocks((event: any) => {
     checkLatestSuccesfultx();
   });

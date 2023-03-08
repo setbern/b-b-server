@@ -1,8 +1,8 @@
 import fetch from "node-fetch";
 export const STACKS_API = "https://stacks-node-api.mainnet.stacks.co/";
 
-export const CONTRACT_ADDRESSS = "SP25VWGTPR19E344S4ENTHQT8651216EPNABRYE51";
-export const CONTRACT_NAME = "bos-board-test";
+export const CONTRACT_ADDRESSS = "SP68D5TNN9JH6G582VK824XR47VQABPAZSK9C1SD";
+export const CONTRACT_NAME = "bos-board";
 //https://stacks-node-api.mainnet.stacks.co/extended/v1/address/{principal}/transactions
 
 export const getContractLatestTX = async () => {

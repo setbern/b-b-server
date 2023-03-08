@@ -23,7 +23,8 @@ import {
 } from "./modules/collection";
 
 const isHeroku = process.env.NODE_ENV === "production";
-const port = isHeroku ? parseInt(process.env.PORT || "3001", 10) || 3001 : 3001;
+const localPot = 3002;
+const port = isHeroku ? parseInt(process.env.PORT || "3001", 10) || 3002 : 3002;
 
 console.log("isHeroku", isHeroku);
 console.log("port", port);
@@ -56,12 +57,20 @@ const startServer = () => {
   });
 
   server.register(fastifyCors, {
-    origin: ["http://localhost:3000", "https://badger-board.vercel.app"],
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "https://badger-board.vercel.app",
+    ],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   });
   server.register(fastifyIO, {
     cors: {
-      origin: ["http://localhost:3000", "https://badger-board.vercel.app"],
+      origin: [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "https://badger-board.vercel.app",
+      ],
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     },
   });
@@ -222,8 +231,8 @@ const startServer = () => {
       const subscribeClient = redis.duplicate();
 
       redis.on("error", (err) => {
-        console.error(`Redis subscribeClient  error: ${err}`);
-        redis.connect();
+        console.error(`Redis subscribeClient  err ${err}`);
+        //redis.connect();
       });
       redis.on("reconnecting", (params) =>
         console.info(
@@ -266,8 +275,7 @@ const startServer = () => {
     }
     console.log(`Server listening at ${address}`);
     startUpWebSocket();
-    //checkLatestSuccesfultx();
-    //checkPendingTiles()
+    checkLatestSuccesfultx();
   });
 };
 

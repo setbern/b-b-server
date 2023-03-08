@@ -50,6 +50,11 @@
 ;; Var that keeps track of the active board index
 (define-data-var board-index uint u1)
 
+;; Var that keeps track of helper principal
+;;(define-data-var helper-principal <nft-collection> .nft-a)
+
+(define-data-var helper-uint uint u0)
+
 ;; Var that keeps tracks of admin principals
 (define-data-var admins (list 8 principal) (list deployer))
 
@@ -159,7 +164,7 @@
     (asserts! (is-none (get-tile-history tile-position)) (err "err-tile-meta-exists"))
 
     ;; Assert that submitted collection is whitelisted
-    (asserts! (is-some (index-of current-board-whitelisted-collections (contract-of collection))) (err "err-collection-not-whitelisted"))
+    (asserts! (or (is-some (index-of current-board-whitelisted-collections (contract-of collection))) (is-some (index-of (var-get badger-collections) (contract-of collection)))) (err "err-collection-not-whitelisted"))
 
     ;; Assert that the tile position is valid (less than the max amount of tiles on the board)
     (asserts! (< tile-position u5000) (err "err-tile-position-invalid"))
@@ -191,13 +196,78 @@
 ;; Function to place many tiles at once
 ;; @desc - Function to place many tiles at once
 ;; @param - Tile-Placement (list 1000 {tile-position: uint, item: uint, collection: principal, color: (string-ascii 6)}) - A list of tile placements
-(define-public (place-tiles (tile-placements (list 250 {tile-position: uint, item: uint, collection:  <nft-collection>, color: (string-ascii 6)})))
-  (ok (map map-to-place-each-tile tile-placements))
+;; (define-public (place-tiles (tile-placements (list 2 {tile-position: uint, item: uint, color: (string-ascii 6)})) (tiles-collection <nft-collection>))
+;;   (let 
+;;     (
+;;       (initial-trait-list (list 250 tiles-collection))
+;;     )
+;;     (ok true)
+;;   )
+;;   ;; (begin 
+;;   ;;   ;; var-set helper-principal to tiles-collection
+;;   ;;   (var-set helper-principal tiles-collection)
+;;   ;;   (ok (map map-to-place-each-tile tile-placements)) 
+;;   ;; )
+;; )
+
+(define-public (place-tiles (tile-placements (list 250 {tile-position: uint, item: uint, color: (string-ascii 6)})) (tiles-collection <nft-collection>)) 
+  (let
+    (
+      (trait-list (list 
+        tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection
+        tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection
+        tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection
+        tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection
+        tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection
+        tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection
+        tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection
+        tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection
+        tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection
+        tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection
+        tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection
+        tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection
+        tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection
+        tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection
+        tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection
+        tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection
+        tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection
+        tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection
+        tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection
+        tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection
+        tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection
+        tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection
+        tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection
+        tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection
+        tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection tiles-collection
+      ))
+    )
+
+    ;; Var-set helper-uint to the length of tile-placements passed in parameter
+    (var-set helper-uint (len tile-placements))
+
+    ;; Filter initial-tuple-trait-list using the index key & helper-uint 
+    ;; Then map the result from a list of tuples to a simple list of traits
+    ;; Finally call place-many-helper with the tile-placements & the list of traits
+    (ok (map place-many-helper tile-placements trait-list))
+  )
 )
 
-;; Private helper function to map through a list of tile-placements & place them
-(define-private (map-to-place-each-tile (placement {tile-position: uint, item: uint, collection: <nft-collection>, color: (string-ascii 6)}))
-  (place-tile (get item placement) (get collection placement) (get tile-position placement) (get color placement))
+;; Private helper function for placing many tiles
+(define-private (place-many-helper (test-placement {tile-position: uint, item: uint, color: (string-ascii 6)}) (test-collection <nft-collection>)) 
+  (place-tile (get item test-placement) test-collection (get tile-position test-placement) (get color test-placement))
+)
+
+;; Private helper function for filtering initial tuple trait list using the index key & helper-uint
+(define-private (filter-initial-tuple-trait-list (initial-tuple {index: uint, trait: <nft-collection>}))
+  (if (< (get index initial-tuple) (var-get helper-uint))
+    true
+    false
+  )
+)
+
+;; Private helper function from mapping from tuple trait list to a list of traits
+(define-private (map-to-trait-list (initial-tuple {index: uint, trait: <nft-collection>}))
+  (get trait initial-tuple)
 )
 
 ;; Function to replace a tile
