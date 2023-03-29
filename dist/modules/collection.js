@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateCollectionMeta = exports.createNewCollection = exports.startCollection = exports.checkPendingTilesFromMicoblockUpdates = exports.checkLatestSuccesfultx = exports.checkPendingTiles = void 0;
+exports.checkPendingByAddress = exports.updateCollectionMeta = exports.createNewCollection = exports.startCollection = exports.checkPendingTilesFromMicoblockUpdates = exports.checkLatestSuccesfultx = exports.checkPendingTiles = void 0;
 const redis_1 = __importDefault(require("../redis"));
 const stacks_1 = require("../stacks");
 const RedisHelpers_1 = require("./RedisHelpers");
@@ -27,6 +27,7 @@ const checkPendingTiles = async () => {
             if (!collections) {
                 return { status: "no collections" };
             }
+            console.log("collection", collections);
             for (const collection in collections) {
                 const collectionId = collections[collection].collectionId + "";
                 await checkingPendingTilesInHash(collectionId, lastThreeBlocksApprovedTx);
@@ -237,4 +238,12 @@ const updateCollectionMeta = async (collectionId) => {
     }
 };
 exports.updateCollectionMeta = updateCollectionMeta;
+// fetch the pending txs by address
+const checkPendingByAddress = async (address) => {
+    // const latestTransactions = await getLatestTxFromAddress(
+    //   "SP2MYPTSQE3NN1HYDQWB1G06G20E6KFTDWWMEG93W"
+    // );
+    return null;
+};
+exports.checkPendingByAddress = checkPendingByAddress;
 //# sourceMappingURL=collection.js.map
