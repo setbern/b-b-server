@@ -32,6 +32,7 @@ const startServer = () => {
             "http://localhost:3000",
             "http://localhost:3001",
             "https://badger-board.vercel.app",
+            "https://badger-board-git-dev-setteam.vercel.app"
         ],
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     });
