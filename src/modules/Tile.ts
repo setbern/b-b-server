@@ -152,6 +152,16 @@ export type EXISTING_SELECTED_TILE = {
   [key: number]: SELECTED_TILE_NEW;
 };
 
+export type PENDING_SELECTED_TILE = {
+  [key: number]: SELECTED_TILE_PENDING;
+};
+
+export type SELECTED_TILE_PENDING = {
+  id: number;
+  color: string;
+  history: TILE_HISTORY[];
+};
+
 export const fetchAllTiles = async () => {
   try {
     console.log("what");
@@ -171,6 +181,48 @@ export const fetchAllTiles = async () => {
     console.log("parsed", parsed);
 
     return parsed;
+  } catch (err) {
+    console.log("error in fetchAllTiles", err);
+    throw new Error(":(");
+  }
+};
+
+export const fetchPendingTilesByAddress = async (address: string) => {
+  try {
+    const items = await redis.hGetAll(testPendingContractKey);
+
+    let found: PENDING_SELECTED_TILE = {};
+
+    for (const tile in items) {
+      const _parsed = JSON.parse(items[tile]);
+
+      // check if the address matches
+      if (_parsed.principal === address) {
+        // loop through the tiles
+        console.log("_parsed.tiles", _parsed);
+        
+        for (const t in _parsed.tiles) {
+          const _t = _parsed.tiles[t];
+
+          const id = _t.tileId;
+          const color = _t.color;
+          const history = [{
+            txId: _parsed.txId,
+            principal: _parsed.principal,
+            color
+          }] as TILE_HISTORY[];
+
+          found[id] = {
+            id,
+            color,
+            history
+          };
+        }
+        break;
+      }
+    }
+    console.log("parsed", found);
+    return found;
   } catch (err) {
     console.log("error in fetchAllTiles", err);
     throw new Error(":(");

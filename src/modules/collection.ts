@@ -4,6 +4,7 @@ import {
   getBlockInfo,
   getBnsName,
   getLatestBlocks,
+  getLatestTxFromAddress,
   getLatestTxFromBoard,
   STACKS_API,
 } from "../stacks";
@@ -40,6 +41,8 @@ export const checkPendingTiles = async () => {
         return { status: "no collections" };
       }
 
+      console.log("collection", collections);
+
       for (const collection in collections) {
         const collectionId = collections[collection].collectionId + "";
         await checkingPendingTilesInHash(
@@ -48,6 +51,7 @@ export const checkPendingTiles = async () => {
         );
       }
     }
+
     return { status: "yee" };
   } catch (err) {
     console.log("checkPendingTiles", err);
@@ -308,4 +312,13 @@ export const updateCollectionMeta = async (collectionId: number) => {
   } catch (err) {
     console.log("error updating collection meta", err);
   }
+};
+
+// fetch the pending txs by address
+export const checkPendingByAddress = async (address: string) => {
+  // const latestTransactions = await getLatestTxFromAddress(
+  //   "SP2MYPTSQE3NN1HYDQWB1G06G20E6KFTDWWMEG93W"
+  // );
+
+  return null;
 };

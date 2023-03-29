@@ -12,15 +12,19 @@ import {
   CleanTiles,
   EXISTING_SELECTED_TILE,
   fetchAllTiles,
+  fetchPendingTilesByAddress,
+  PENDING_SELECTED_TILE,
   SELECTED_TILE,
   _addNewTile,
 } from "./modules/Tile";
 import {
   checkLatestSuccesfultx,
+  checkPendingByAddress,
   checkPendingTiles,
   createNewCollection,
   startCollection,
 } from "./modules/collection";
+import { Request } from "node-fetch";
 
 const isHeroku = process.env.NODE_ENV === "production";
 const localPot = 3002;
@@ -82,6 +86,17 @@ const startServer = () => {
     reply.send({ tiles });
   });
 
+  server.get<{
+    Reply: { tiles: PENDING_SELECTED_TILE };
+  }>("/pending-tiles", {}, async (req:any, reply) => {
+    const address = req.query.address;
+    if(address){
+      const tiles = await fetchPendingTilesByAddress(address);
+      return reply.send({ tiles });
+    }
+    return reply.send({ tiles: {} });
+  });
+
   server.post<{
     Reply: { status: string; collectionId: number };
   }>("/newCollection", {}, async (req, reply) => {
@@ -91,7 +106,17 @@ const startServer = () => {
   server.post<{
     Reply: { status: string };
   }>("/checkPending", {}, async (req, reply) => {
+    console.log("checkPending");
     return checkPendingTiles();
+  });
+
+  server.get<{
+    Reply: { status: string; pending: any };
+  }>("/checkPendingByAddress", {}, async (req, reply) => {
+    console.log(req.query);
+    const pending = await checkPendingByAddress("1");
+    console.log('pending>>>>>>', pending)
+    reply.send({ status: "ok", pending });
   });
 
   server.post<{

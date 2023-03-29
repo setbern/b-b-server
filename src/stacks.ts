@@ -110,3 +110,33 @@ export const getLatestTxFromBoard = async (offset: number) => {
     return null;
   }
 };
+
+export const getLatestTxFromAddress = async (address: string) => {
+  try {
+    const rawData = await fetch(`${STACKS_API}extended/v1/tx/mempool`);
+
+    if (!rawData.ok) {
+      throw new Error("Failed to fetch transactions");
+    }
+
+    const data = await rawData.json();
+
+    const pendingInteractions = data.results.filter(
+      (tx: any) => tx.sender_address === address
+    );
+    // .filter(
+    //   (tx: any) =>
+    //     tx.tx_type === "contract_call" &&
+    //     tx.contract_call.contract_id === CONTRACT_ADDRESSS + ".bos-board"
+    // );
+    console.log(pendingInteractions);
+    if (pendingInteractions.length > 0) {
+      return pendingInteractions;
+    } else {
+      return null;
+    }
+  } catch (err) {
+    console.log("getLatestTxFromBoard err", err);
+    return null;
+  }
+};
