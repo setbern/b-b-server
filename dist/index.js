@@ -49,11 +49,26 @@ const startServer = () => {
         const tiles = await (0, Tile_1.fetchAllTiles)();
         reply.send({ tiles });
     });
+    server.get("/pending-tiles", {}, async (req, reply) => {
+        const address = req.query.address;
+        if (address) {
+            const tiles = await (0, Tile_1.fetchPendingTilesByAddress)(address);
+            return reply.send({ tiles });
+        }
+        return reply.send({ tiles: {} });
+    });
     server.post("/newCollection", {}, async (req, reply) => {
         return (0, collection_1.createNewCollection)();
     });
     server.post("/checkPending", {}, async (req, reply) => {
+        console.log("checkPending");
         return (0, collection_1.checkPendingTiles)();
+    });
+    server.get("/checkPendingByAddress", {}, async (req, reply) => {
+        console.log(req.query);
+        const pending = await (0, collection_1.checkPendingByAddress)("1");
+        console.log('pending>>>>>>', pending);
+        reply.send({ status: "ok", pending });
     });
     server.post("/startCollection", {
         preValidation: (req, reply, done) => {

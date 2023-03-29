@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.fetchAllTiles = exports._addNewTile = exports.collectionsHashKey = exports.COLLECTION_KEY_GEN = exports.COLLECTION_STATUS = exports.testPendingContractKey = exports.testTilesContractKey = void 0;
+exports.fetchPendingTilesByAddress = exports.fetchAllTiles = exports._addNewTile = exports.collectionsHashKey = exports.COLLECTION_KEY_GEN = exports.COLLECTION_STATUS = exports.testPendingContractKey = exports.testTilesContractKey = void 0;
 const redis_1 = __importDefault(require("../redis"));
 exports.testTilesContractKey = "2:APPROVED";
 exports.testPendingContractKey = "2:PENDING";
@@ -68,6 +68,43 @@ const fetchAllTiles = async () => {
     }
 };
 exports.fetchAllTiles = fetchAllTiles;
+const fetchPendingTilesByAddress = async (address) => {
+    try {
+        const items = await redis_1.default.hGetAll(exports.testPendingContractKey);
+        let found = {};
+        for (const tile in items) {
+            const _parsed = JSON.parse(items[tile]);
+            // check if the address matches
+            if (_parsed.principal === address) {
+                // loop through the tiles
+                console.log("_parsed.tiles", _parsed);
+                for (const t in _parsed.tiles) {
+                    const _t = _parsed.tiles[t];
+                    const id = _t.tileId;
+                    const color = _t.color;
+                    const history = [{
+                            txId: _parsed.txId,
+                            principal: _parsed.principal,
+                            color
+                        }];
+                    found[id] = {
+                        id,
+                        color,
+                        history
+                    };
+                }
+                break;
+            }
+        }
+        console.log("parsed", found);
+        return found;
+    }
+    catch (err) {
+        console.log("error in fetchAllTiles", err);
+        throw new Error(":(");
+    }
+};
+exports.fetchPendingTilesByAddress = fetchPendingTilesByAddress;
 /*
 export const AddNewtile = async (params: AddNewTileProps) => {
   try {

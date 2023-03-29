@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getLatestTxFromBoard = exports.getLatestBlocks = exports.getBlockInfo = exports.getBnsName = exports.getContractLatestTX = exports.CONTRACT_NAME = exports.CONTRACT_ADDRESSS = exports.STACKS_API = void 0;
+exports.getLatestTxFromAddress = exports.getLatestTxFromBoard = exports.getLatestBlocks = exports.getBlockInfo = exports.getBnsName = exports.getContractLatestTX = exports.CONTRACT_NAME = exports.CONTRACT_ADDRESSS = exports.STACKS_API = void 0;
 const node_fetch_1 = __importDefault(require("node-fetch"));
 exports.STACKS_API = "https://stacks-node-api.mainnet.stacks.co/";
 exports.CONTRACT_ADDRESSS = "SP68D5TNN9JH6G582VK824XR47VQABPAZSK9C1SD";
@@ -109,4 +109,31 @@ const getLatestTxFromBoard = async (offset) => {
     }
 };
 exports.getLatestTxFromBoard = getLatestTxFromBoard;
+const getLatestTxFromAddress = async (address) => {
+    try {
+        const rawData = await (0, node_fetch_1.default)(`${exports.STACKS_API}extended/v1/tx/mempool`);
+        if (!rawData.ok) {
+            throw new Error("Failed to fetch transactions");
+        }
+        const data = await rawData.json();
+        const pendingInteractions = data.results.filter((tx) => tx.sender_address === address);
+        // .filter(
+        //   (tx: any) =>
+        //     tx.tx_type === "contract_call" &&
+        //     tx.contract_call.contract_id === CONTRACT_ADDRESSS + ".bos-board"
+        // );
+        console.log(pendingInteractions);
+        if (pendingInteractions.length > 0) {
+            return pendingInteractions;
+        }
+        else {
+            return null;
+        }
+    }
+    catch (err) {
+        console.log("getLatestTxFromBoard err", err);
+        return null;
+    }
+};
+exports.getLatestTxFromAddress = getLatestTxFromAddress;
 //# sourceMappingURL=stacks.js.map
