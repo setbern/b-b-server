@@ -82,18 +82,19 @@ const fetchPendingTilesByAddress = async (address) => {
                     const _t = _parsed.tiles[t];
                     const id = _t.tileId;
                     const color = _t.color;
-                    const history = [{
+                    const history = [
+                        {
                             txId: _parsed.txId,
                             principal: _parsed.principal,
-                            color
-                        }];
+                            color,
+                        },
+                    ];
                     found[id] = {
                         id,
                         color,
-                        history
+                        history,
                     };
                 }
-                break;
             }
         }
         console.log("parsed", found);

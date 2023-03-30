@@ -200,25 +200,26 @@ export const fetchPendingTilesByAddress = async (address: string) => {
       if (_parsed.principal === address) {
         // loop through the tiles
         console.log("_parsed.tiles", _parsed);
-        
+
         for (const t in _parsed.tiles) {
           const _t = _parsed.tiles[t];
 
           const id = _t.tileId;
           const color = _t.color;
-          const history = [{
-            txId: _parsed.txId,
-            principal: _parsed.principal,
-            color
-          }] as TILE_HISTORY[];
+          const history = [
+            {
+              txId: _parsed.txId,
+              principal: _parsed.principal,
+              color,
+            },
+          ] as TILE_HISTORY[];
 
           found[id] = {
             id,
             color,
-            history
+            history,
           };
         }
-        break;
       }
     }
     console.log("parsed", found);
