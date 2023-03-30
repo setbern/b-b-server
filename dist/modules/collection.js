@@ -22,6 +22,7 @@ const checkPendingTiles = async () => {
                 ...secondLatestBlockItem,
                 ...thirdLatestBlockItem,
             ];
+            console.log("cop out");
             // fetch all the pending tiles for each active collection
             const collections = (await (0, RedisHelpers_1.fetchHash)(Tile_1.collectionsHashKey));
             if (!collections) {

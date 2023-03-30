@@ -35,6 +35,7 @@ export const checkPendingTiles = async () => {
         ...thirdLatestBlockItem,
       ];
 
+      console.log("cop out");
       // fetch all the pending tiles for each active collection
       const collections = (await fetchHash(collectionsHashKey)) as COLLECTION[];
       if (!collections) {
