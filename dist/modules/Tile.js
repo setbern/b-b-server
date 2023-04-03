@@ -66,6 +66,7 @@ const fetchAllTiles = async () => {
 };
 exports.fetchAllTiles = fetchAllTiles;
 const fetchPendingTilesByAddress = async (address) => {
+    console.log("fetchPendingTilesByAddress");
     try {
         const items = await redis_1.default.hGetAll(exports.testPendingContractKey);
         let found = {};
