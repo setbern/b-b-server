@@ -190,6 +190,7 @@ export const fetchAllTiles = async () => {
 };
 
 export const fetchPendingTilesByAddress = async (address: string) => {
+  console.log("fetchPendingTilesByAddress");
   try {
     const items = await redis.hGetAll(testPendingContractKey);
 
