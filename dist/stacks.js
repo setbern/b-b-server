@@ -19,9 +19,6 @@ const getContractLatestTX = async () => {
             const total = clean.total;
             const latest = clean.results[0];
             const offset = clean.offset;
-            console.log("tot`al", total);
-            console.log("latest", latest);
-            console.log("offset", offset);
         }
     }
     catch (err) {

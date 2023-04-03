@@ -32,7 +32,7 @@ const startServer = () => {
             "http://localhost:3000",
             "http://localhost:3001",
             "https://badger-board.vercel.app",
-            "https://badger-board-git-dev-setteam.vercel.app"
+            "https://badger-board-git-dev-setteam.vercel.app",
         ],
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     });
@@ -58,17 +58,23 @@ const startServer = () => {
         }
         return reply.send({ tiles: {} });
     });
+    server.get("/used-tiles", {}, async (req, reply) => {
+        const address = req.query.address;
+        if (address) {
+            const tiles = await (0, Tile_1.fetchUsedTilesByAddress)(address);
+            return reply.send({ tiles });
+        }
+        return reply.send({ tiles: 0 });
+    });
     server.post("/newCollection", {}, async (req, reply) => {
         return (0, collection_1.createNewCollection)();
     });
     server.post("/checkPending", {}, async (req, reply) => {
-        console.log("checkPending");
         return (0, collection_1.checkPendingTiles)();
     });
     server.get("/checkPendingByAddress", {}, async (req, reply) => {
         console.log(req.query);
         const pending = await (0, collection_1.checkPendingByAddress)("1");
-        console.log('pending>>>>>>', pending);
         reply.send({ status: "ok", pending });
     });
     server.post("/startCollection", {

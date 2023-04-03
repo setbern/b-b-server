@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.fetchPendingTilesByAddress = exports.fetchAllTiles = exports._addNewTile = exports.collectionsHashKey = exports.COLLECTION_KEY_GEN = exports.COLLECTION_STATUS = exports.testPendingContractKey = exports.testTilesContractKey = void 0;
+exports.fetchUsedTilesByAddress = exports.fetchApprovedTilesByAddress = exports.fetchPendingTilesByAddress = exports.fetchAllTiles = exports._addNewTile = exports.collectionsHashKey = exports.COLLECTION_KEY_GEN = exports.COLLECTION_STATUS = exports.testPendingContractKey = exports.testTilesContractKey = void 0;
 const redis_1 = __importDefault(require("../redis"));
 exports.testTilesContractKey = "2:APPROVED";
 exports.testPendingContractKey = "2:PENDING";
@@ -49,12 +49,9 @@ const _addNewTile = async (params) => {
 exports._addNewTile = _addNewTile;
 const fetchAllTiles = async () => {
     try {
-        console.log("what");
         const items = await redis_1.default.hGetAll(exports.testTilesContractKey);
-        console.log("items", items);
         let parsed = {};
         for (const tile in items) {
-            console.log("tile", tile);
             console.log("items[tile]", items[tile]);
             const _parsed = JSON.parse(items[tile]);
             parsed[_parsed.id] = _parsed;
@@ -106,6 +103,42 @@ const fetchPendingTilesByAddress = async (address) => {
     }
 };
 exports.fetchPendingTilesByAddress = fetchPendingTilesByAddress;
+const fetchApprovedTilesByAddress = async (address) => {
+    try {
+        // get all the approved tiles
+        const items = await redis_1.default.hGetAll(exports.testTilesContractKey);
+        let found = {};
+        // loop through the approved tiles and find the ones that match the address
+        for (const tile in items) {
+            const _parsed = JSON.parse(items[tile]);
+            // check if the address matches
+            if (_parsed.principal === address) {
+                console.log("found");
+                found[_parsed.id] = _parsed;
+            }
+        }
+        return found;
+    }
+    catch (err) {
+        console.log("error in fetchAllTiles", err);
+        throw new Error(":(");
+    }
+};
+exports.fetchApprovedTilesByAddress = fetchApprovedTilesByAddress;
+const fetchUsedTilesByAddress = async (address) => {
+    try {
+        const pendingTiles = await (0, exports.fetchPendingTilesByAddress)(address);
+        const approvedTiles = await (0, exports.fetchApprovedTilesByAddress)(address);
+        const allTiles = Object.assign(Object.assign({}, approvedTiles), pendingTiles);
+        const total = Object.keys(allTiles).length;
+        return total;
+    }
+    catch (err) {
+        console.log("error in fetchAllTiles", err);
+        throw new Error(":(");
+    }
+};
+exports.fetchUsedTilesByAddress = fetchUsedTilesByAddress;
 /*
 export const AddNewtile = async (params: AddNewTileProps) => {
   try {

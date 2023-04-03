@@ -22,13 +22,11 @@ const checkPendingTiles = async () => {
                 ...secondLatestBlockItem,
                 ...thirdLatestBlockItem,
             ];
-            console.log("cop out");
             // fetch all the pending tiles for each active collection
             const collections = (await (0, RedisHelpers_1.fetchHash)(Tile_1.collectionsHashKey));
             if (!collections) {
                 return { status: "no collections" };
             }
-            console.log("collection", collections);
             for (const collection in collections) {
                 const collectionId = collections[collection].collectionId + "";
                 await checkingPendingTilesInHash(collectionId, lastThreeBlocksApprovedTx);
@@ -74,7 +72,6 @@ const checkLatestSuccesfultx = async () => {
             const txIdWithout0x = txId.substring(2);
             return txIdWithout0x;
         });
-        console.log("filteredItems", filteredItems);
         await checkingPendingTilesInHash("2", filteredItems);
         return "yeet";
     }
@@ -86,7 +83,6 @@ exports.checkLatestSuccesfultx = checkLatestSuccesfultx;
 const checkPendingTilesFromMicoblockUpdates = async (txs) => {
     try {
         const collectionId = "2";
-        console.log("checkPendingTilesFromMicoblockUpdates");
         const runIt = await checkingPendingTilesInHash(collectionId, txs);
     }
     catch (err) {
@@ -103,14 +99,12 @@ const checkingPendingTilesInHash = async (collectionId, approvedTx) => {
         }
         // check if any of the pending tiles exist in the last three blocks
         const approvedTiles = [];
-        console.log("pendingTiles", pendingTiles);
         for (const pendingTileKey in pendingTiles) {
             const pendingTile = pendingTiles[pendingTileKey];
             const pendingTileTxId = pendingTile.txId;
             // check if the txId is in the last three blocks
             const approvedTxId = approvedTx.find((tx) => tx === pendingTileTxId);
             //const approvedTxId = true;
-            console.log("approvedTxId", approvedTxId);
             if (approvedTxId) {
                 approvedTiles.push(pendingTile);
             }
