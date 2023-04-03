@@ -16,6 +16,7 @@ import {
   PENDING_SELECTED_TILE,
   SELECTED_TILE,
   _addNewTile,
+  fetchUsedTilesByAddress,
 } from "./modules/Tile";
 import {
   checkLatestSuccesfultx,
@@ -65,7 +66,7 @@ const startServer = () => {
       "http://localhost:3000",
       "http://localhost:3001",
       "https://badger-board.vercel.app",
-      "https://badger-board-git-dev-setteam.vercel.app"
+      "https://badger-board-git-dev-setteam.vercel.app",
     ],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   });
@@ -89,13 +90,24 @@ const startServer = () => {
 
   server.get<{
     Reply: { tiles: PENDING_SELECTED_TILE };
-  }>("/pending-tiles", {}, async (req:any, reply) => {
+  }>("/pending-tiles", {}, async (req: any, reply) => {
     const address = req.query.address;
-    if(address){
+    if (address) {
       const tiles = await fetchPendingTilesByAddress(address);
       return reply.send({ tiles });
     }
     return reply.send({ tiles: {} });
+  });
+
+  server.get<{
+    Reply: { tiles: number };
+  }>("/used-tiles", {}, async (req: any, reply) => {
+    const address = req.query.address;
+    if (address) {
+      const tiles = await fetchUsedTilesByAddress(address);
+      return reply.send({ tiles });
+    }
+    return reply.send({ tiles: 0 });
   });
 
   server.post<{
@@ -107,7 +119,6 @@ const startServer = () => {
   server.post<{
     Reply: { status: string };
   }>("/checkPending", {}, async (req, reply) => {
-    console.log("checkPending");
     return checkPendingTiles();
   });
 
@@ -116,7 +127,7 @@ const startServer = () => {
   }>("/checkPendingByAddress", {}, async (req, reply) => {
     console.log(req.query);
     const pending = await checkPendingByAddress("1");
-    console.log('pending>>>>>>', pending)
+
     reply.send({ status: "ok", pending });
   });
 

@@ -152,6 +152,10 @@ export type EXISTING_SELECTED_TILE = {
   [key: number]: SELECTED_TILE_NEW;
 };
 
+export type APPROVED_SELECTED_TILE = {
+  [key: number]: APPROVED_TILE;
+};
+
 export type PENDING_SELECTED_TILE = {
   [key: number]: SELECTED_TILE_PENDING;
 };
@@ -164,13 +168,11 @@ export type SELECTED_TILE_PENDING = {
 
 export const fetchAllTiles = async () => {
   try {
-    console.log("what");
     const items = await redis.hGetAll(testTilesContractKey);
-    console.log("items", items);
+
     let parsed: EXISTING_SELECTED_TILE = {};
 
     for (const tile in items) {
-      console.log("tile", tile);
       console.log("items[tile]", items[tile]);
 
       const _parsed = JSON.parse(items[tile]) as SELECTED_TILE_NEW;
@@ -224,6 +226,43 @@ export const fetchPendingTilesByAddress = async (address: string) => {
     }
     console.log("parsed", found);
     return found;
+  } catch (err) {
+    console.log("error in fetchAllTiles", err);
+    throw new Error(":(");
+  }
+};
+
+export const fetchApprovedTilesByAddress = async (address: string) => {
+  try {
+    // get all the approved tiles
+    const items = await redis.hGetAll(testTilesContractKey);
+
+    let found: APPROVED_SELECTED_TILE = {};
+    // loop through the approved tiles and find the ones that match the address
+    for (const tile in items) {
+      const _parsed = JSON.parse(items[tile]) as APPROVED_TILE;
+
+      // check if the address matches
+      if (_parsed.principal === address) {
+        console.log("found");
+        found[_parsed.id] = _parsed;
+      }
+    }
+    return found;
+  } catch (err) {
+    console.log("error in fetchAllTiles", err);
+    throw new Error(":(");
+  }
+};
+
+export const fetchUsedTilesByAddress = async (address: string) => {
+  try {
+    const pendingTiles = await fetchPendingTilesByAddress(address);
+    const approvedTiles = await fetchApprovedTilesByAddress(address);
+
+    const allTiles = { ...approvedTiles, ...pendingTiles };
+    const total = Object.keys(allTiles).length;
+    return total;
   } catch (err) {
     console.log("error in fetchAllTiles", err);
     throw new Error(":(");

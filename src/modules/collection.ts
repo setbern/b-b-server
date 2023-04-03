@@ -35,14 +35,14 @@ export const checkPendingTiles = async () => {
         ...thirdLatestBlockItem,
       ];
 
-      console.log("cop out");
+  
       // fetch all the pending tiles for each active collection
       const collections = (await fetchHash(collectionsHashKey)) as COLLECTION[];
       if (!collections) {
         return { status: "no collections" };
       }
 
-      console.log("collection", collections);
+  
 
       for (const collection in collections) {
         const collectionId = collections[collection].collectionId + "";
@@ -100,7 +100,7 @@ export const checkLatestSuccesfultx = async () => {
         return txIdWithout0x;
       });
 
-    console.log("filteredItems", filteredItems);
+  
 
     await checkingPendingTilesInHash("2", filteredItems);
 
@@ -112,7 +112,6 @@ export const checkLatestSuccesfultx = async () => {
 export const checkPendingTilesFromMicoblockUpdates = async (txs: string[]) => {
   try {
     const collectionId = "2";
-    console.log("checkPendingTilesFromMicoblockUpdates");
     const runIt = await checkingPendingTilesInHash(collectionId, txs);
   } catch (err) {
     console.log("err", err);
@@ -134,7 +133,7 @@ const checkingPendingTilesInHash = async (
 
     const approvedTiles: PENDING_TX[] = [];
 
-    console.log("pendingTiles", pendingTiles);
+  
 
     for (const pendingTileKey in pendingTiles) {
       const pendingTile = pendingTiles[pendingTileKey];
@@ -143,7 +142,7 @@ const checkingPendingTilesInHash = async (
       // check if the txId is in the last three blocks
       const approvedTxId = approvedTx.find((tx) => tx === pendingTileTxId);
       //const approvedTxId = true;
-      console.log("approvedTxId", approvedTxId);
+     
       if (approvedTxId) {
         approvedTiles.push(pendingTile);
       }
