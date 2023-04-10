@@ -102,7 +102,7 @@ export const checkLatestSuccesfultx = async () => {
 
   
 
-    await checkingPendingTilesInHash("2", filteredItems);
+    await checkingPendingTilesInHash("3", filteredItems);
 
     return "yeet";
   } catch (err) {
@@ -111,7 +111,7 @@ export const checkLatestSuccesfultx = async () => {
 };
 export const checkPendingTilesFromMicoblockUpdates = async (txs: string[]) => {
   try {
-    const collectionId = "2";
+    const collectionId = "3";
     const runIt = await checkingPendingTilesInHash(collectionId, txs);
   } catch (err) {
     console.log("err", err);

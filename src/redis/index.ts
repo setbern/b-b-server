@@ -24,7 +24,7 @@ redis.on("reconnecting", (params) =>
 );
 redis.on("connect", () => {
   console.info("Redis connected");
-  setInterval((client) => {
+  setInterval((client:any) => {
     console.log("ping",client);
     redis.ping();
   }, 20000);

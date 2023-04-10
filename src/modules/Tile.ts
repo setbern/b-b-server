@@ -29,8 +29,8 @@ export interface AddNewTileProps extends PostTilesQuery {
   server: any;
 }
 
-export const testTilesContractKey = "2:APPROVED";
-export const testPendingContractKey = "2:PENDING";
+export const testTilesContractKey = "3:APPROVED";
+export const testPendingContractKey = "3:PENDING";
 
 export enum COLLECTION_STATUS {
   APPROVED = "APPROVED",
