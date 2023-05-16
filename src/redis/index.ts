@@ -20,7 +20,7 @@ redis.on("error", (err) => {
 });
 
 redis.on("reconnecting", (params) =>
-  console.info(`Redis reconnecting, attempt ${params.attempt}`)
+  console.info(`Redis reconnecting, attempt ${params?.attempt}`)
 );
 redis.on("connect", () => {
   console.info("Redis connected");

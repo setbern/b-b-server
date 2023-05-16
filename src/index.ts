@@ -26,6 +26,9 @@ import {
   startCollection,
 } from "./modules/collection";
 import { Request } from "node-fetch";
+import newBoard from "./board/controllers/initiate-board";
+import placeTiles from "./tiles/controllers/place-tiles";
+import tileAmount from "./nft/controllers/get-tile-amount";
 
 const isHeroku = process.env.NODE_ENV === "production";
 const localPot = 3002;
@@ -48,9 +51,7 @@ export interface PostTilesQuery {
   collection: string;
 }
 
-interface BBHeaders {
-  "b-b-board": string;
-}
+
 const startServer = () => {
   const server = fastify({
     logger: true,
@@ -138,7 +139,7 @@ const startServer = () => {
     "/startCollection",
     {
       preValidation: (req, reply, done) => {
-        console.log("req.body", req.body);
+        
         const { collectionId } = req.body as any;
         if (!collectionId) {
           reply.code(400).send({ status: "missing collectionId" });
@@ -152,6 +153,12 @@ const startServer = () => {
       return startCollection(collectionId);
     }
   );
+
+  void server.register(newBoard);
+
+  void server.register(placeTiles);
+
+  void server.register(tileAmount);
   /*
   server.post<{
     Body: string;
@@ -198,50 +205,7 @@ const startServer = () => {
     }
   );
   */
-  server.post<{
-    Body: string;
-    Headers: BBHeaders;
-    Reply: { status: string };
-  }>(
-    "/tiles-post",
-    {
-      preValidation: (req, reply, done) => {
-        console.log("req body", req.body);
-        const { txId, principal, tiles, collection } = JSON.parse(req.body);
-        // check if their is a missing field and return a 400 with the missing one
-
-        console.log("txId", txId);
-        if (!txId) {
-          reply.code(400).send({ status: "missing txId" });
-          return;
-        }
-        if (!principal) {
-          reply.code(400).send({ status: "missing principal" });
-          return;
-        }
-        if (!tiles) {
-          reply.code(400).send({ status: "missing tiles" });
-          return;
-        }
-        if (!collection) {
-          reply.code(400).send({ status: "missing collection" });
-          return;
-        }
-        done();
-      },
-    },
-    async (req, reply) => {
-      const { txId, principal, tiles, collection } = JSON.parse(req.body);
-
-      return _addNewTile({
-        txId,
-        principal,
-        tiles,
-        collection,
-        server,
-      });
-    }
-  );
+  
   server.get("/", (req, reply) => {
     server.io.to("room1").emit("message", { hello: "world" });
     return "yeet";
@@ -273,7 +237,7 @@ const startServer = () => {
       });
       redis.on("reconnecting", (params) =>
         console.info(
-          `Redis subscribeClient reconnecting, attempt ${params.attempt}`
+          `Redis subscribeClient reconnecting, attempt ${params?.attempt}`
         )
       );
 

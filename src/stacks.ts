@@ -2,13 +2,13 @@ import fetch from "node-fetch";
 export const STACKS_API = "https://stacks-node-api.mainnet.stacks.co/";
 
 export const CONTRACT_ADDRESSS = "SP3D03X5BHMNSAAW71NN7BQRMV4DW2G4JB3MZAGJ8";
-export const CONTRACT_NAME = "BOS-TEST";
+export const CONTRACT_NAME = "BOS-BOARD-TESTING";
 //https://stacks-node-api.mainnet.stacks.co/extended/v1/address/{principal}/transactions
 
 export const getContractLatestTX = async () => {
   try {
     const contractInferface = await fetch(
-      `${STACKS_API}extended/v1/address/SP3D03X5BHMNSAAW71NN7BQRMV4DW2G4JB3MZAGJ8.canvas1/transactions`
+      `${STACKS_API}extended/v1/address/${CONTRACT_ADDRESSS}.${CONTRACT_NAME}/transactions`
     )
       .then((res: any) => res.text())
       .then((text: any) => text);

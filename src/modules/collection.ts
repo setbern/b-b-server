@@ -84,7 +84,7 @@ export const checkLatestSuccesfultx = async () => {
       .filter((item: any) => {
         if (item.tx_status === "success" && item.tx_type === "contract_call") {
           if (item.contract_call.function_name) {
-            if (item.contract_call.function_name === "place-tiles") {
+            if (item.contract_call.function_name === "place-tiles-single-collection") {
               return true;
             }
           }
