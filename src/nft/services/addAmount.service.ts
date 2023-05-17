@@ -41,22 +41,12 @@ const addAmount = async (tokenId: string, collectionId: string) => {
 
     await Promise.all(
       promise.forEach(async (list: any) => {
-        console.log(
-          "list",
-          list,
-          collectionAddress,
-          collectionName,
-          contractPrincipalCV(collectionAddress, collectionName),
-          listCV(list)
-        );
+        console.log("list", principalCV(key), listCV(list));
         const readOnlyCallBoardIndex = await callReadOnlyFunction({
           contractName: CONTRACT_NAME,
           contractAddress: CONTRACT_ADDRESSS,
           functionName: "get-5-item-balance",
-          functionArgs: [
-            contractPrincipalCV(collectionAddress, collectionName),
-            listCV(list),
-          ],
+          functionArgs: [principalCV(key), listCV(list)],
           senderAddress: "SP2MYPTSQE3NN1HYDQWB1G06G20E6KFTDWWMEG93W",
           network: new StacksMainnet(),
         });
