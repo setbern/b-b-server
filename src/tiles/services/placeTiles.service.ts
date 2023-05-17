@@ -8,20 +8,22 @@ import redis from "../../redis";
 
 const place = async (params: AddNewTileProps) => {
   try {
+    console.log("params", params);
     const tilesClean = params.tiles as Tile[];
-    const cleanUp = tilesClean.map((d, i) => {
+    const cleanUp = tilesClean.map((d:any, i) => {
       return {
         tileId: d.position,
         color: d.color,
+        tokenId: d.item,
+        collection: d.collection
       };
     });
-    console.log('here>>>>>>>>>>>>', cleanUp)
 
     const data: PENDING_TX = {
       tiles: cleanUp,
       txId: params.txId,
       principal: params.principal,
-      collectionId: 2,
+      collectionId: parseInt(params.collection),
     };
 
     const keyName = params.txId;

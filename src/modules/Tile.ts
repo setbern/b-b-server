@@ -106,6 +106,8 @@ export type PENDING_TILE = {
   collectionId: number;
   tileId: number;
   color: string;
+  tokenId?: string | number;
+  collection?: string;
 };
 
 export const _addNewTile = async (params: AddNewTileProps) => {
@@ -173,14 +175,12 @@ export const fetchAllTiles = async () => {
     let parsed: EXISTING_SELECTED_TILE = {};
 
     for (const tile in items) {
-      console.log("items[tile]", items[tile]);
 
       const _parsed = JSON.parse(items[tile]) as SELECTED_TILE_NEW;
 
       parsed[_parsed.id] = _parsed;
     }
 
-    console.log("parsed", parsed);
 
     return parsed;
   } catch (err) {
@@ -190,7 +190,6 @@ export const fetchAllTiles = async () => {
 };
 
 export const fetchPendingTilesByAddress = async (address: string) => {
-  console.log("fetchPendingTilesByAddress");
   try {
     const items = await redis.hGetAll(testPendingContractKey);
 
@@ -202,7 +201,6 @@ export const fetchPendingTilesByAddress = async (address: string) => {
       // check if the address matches
       if (_parsed.principal === address) {
         // loop through the tiles
-        console.log("_parsed.tiles", _parsed);
 
         for (const t in _parsed.tiles) {
           const _t = _parsed.tiles[t];
@@ -225,7 +223,6 @@ export const fetchPendingTilesByAddress = async (address: string) => {
         }
       }
     }
-    console.log("parsed", found);
     return found;
   } catch (err) {
     console.log("error in fetchAllTiles", err);

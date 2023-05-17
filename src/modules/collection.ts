@@ -1,4 +1,5 @@
 import { PostTilesQuery, TEST_REDIS_CHANNEL } from "..";
+import substractAmount from "../nft/services/substractAmount.service";
 import redis from "../redis";
 import {
   getBlockInfo,
@@ -35,14 +36,11 @@ export const checkPendingTiles = async () => {
         ...thirdLatestBlockItem,
       ];
 
-  
       // fetch all the pending tiles for each active collection
       const collections = (await fetchHash(collectionsHashKey)) as COLLECTION[];
       if (!collections) {
         return { status: "no collections" };
       }
-
-  
 
       for (const collection in collections) {
         const collectionId = collections[collection].collectionId + "";
@@ -84,7 +82,10 @@ export const checkLatestSuccesfultx = async () => {
       .filter((item: any) => {
         if (item.tx_status === "success" && item.tx_type === "contract_call") {
           if (item.contract_call.function_name) {
-            if (item.contract_call.function_name === "place-tiles-single-collection") {
+            if (
+              item.contract_call.function_name ===
+              "place-tiles-many-collections"
+            ) {
               return true;
             }
           }
@@ -99,8 +100,6 @@ export const checkLatestSuccesfultx = async () => {
 
         return txIdWithout0x;
       });
-
-  
 
     await checkingPendingTilesInHash("3", filteredItems);
 
@@ -122,6 +121,7 @@ const checkingPendingTilesInHash = async (
   approvedTx: string[]
 ) => {
   try {
+    
     // get the hash of the specfic collection
     const pendingTiles = (await fetchHash(
       collectionId + ":PENDING"
@@ -131,23 +131,23 @@ const checkingPendingTilesInHash = async (
     }
     // check if any of the pending tiles exist in the last three blocks
 
+    console.log("pendingTiles", pendingTiles, collectionId, approvedTx)
     const approvedTiles: PENDING_TX[] = [];
-
-  
 
     for (const pendingTileKey in pendingTiles) {
       const pendingTile = pendingTiles[pendingTileKey];
       const pendingTileTxId = pendingTile.txId;
+      console.log(pendingTile);
 
       // check if the txId is in the last three blocks
       const approvedTxId = approvedTx.find((tx) => tx === pendingTileTxId);
       //const approvedTxId = true;
-     
+
       if (approvedTxId) {
         approvedTiles.push(pendingTile);
       }
     }
-
+    console.log("approvedTiles", approvedTiles, pendingTiles);
     const helperFunc = await convertPendingTileToApproved(approvedTiles);
   } catch (err) {
     console.log("checkingPendingTilesInHash", err);
@@ -168,6 +168,7 @@ const convertPendingTileToApproved = async (tiles: PENDING_TX[]) => {
       },
       []
     );
+    console.log('flattenTiles', flattenTiles)
     for (const tile of flattenTiles) {
       // fetch the tile from reids
       const collectionStatusKey = COLLECTION_KEY_GEN(
@@ -178,7 +179,9 @@ const convertPendingTileToApproved = async (tiles: PENDING_TX[]) => {
         `${tile.tileId}`,
         collectionStatusKey
       );
+      console.log("tileLookUp", tileLookUp);
       if (tileLookUp) {
+        console.log("til<<<>>><><><><><")
         // already exist need to update it with its' history
         const approvedTile = tileLookUp as APPROVED_TILE;
 
@@ -226,6 +229,8 @@ const convertPendingTileToApproved = async (tiles: PENDING_TX[]) => {
         tile.collectionId + ":PENDING",
         tile.txId
       );
+
+      await substractAmount(tile.tokenId as number, tile.collection as string, 1);
     }
   } catch (err) {
     console.log("convertPendingTileToApproved", err);

@@ -127,7 +127,6 @@ export const getLatestTxFromAddress = async (address: string) => {
     //     tx.tx_type === "contract_call" &&
     //     tx.contract_call.contract_id === CONTRACT_ADDRESSS + ".bos-board"
     // );
-    console.log(pendingInteractions);
     if (pendingInteractions.length > 0) {
       return pendingInteractions;
     } else {

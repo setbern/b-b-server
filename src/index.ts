@@ -126,7 +126,6 @@ const startServer = () => {
   server.get<{
     Reply: { status: string; pending: any };
   }>("/checkPendingByAddress", {}, async (req, reply) => {
-    console.log(req.query);
     const pending = await checkPendingByAddress("1");
 
     reply.send({ status: "ok", pending });
@@ -217,7 +216,6 @@ const startServer = () => {
       socket.join(TEST_REDIS_CHANNEL);
 
       socket.on("message", (data) => {
-        console.log(data);
 
         socket.emit("hello", "what is going on");
       });
@@ -228,7 +226,6 @@ const startServer = () => {
     });
 
     (async () => {
-      console.log("when does this run");
       const subscribeClient = redis.duplicate();
 
       redis.on("error", (err) => {
