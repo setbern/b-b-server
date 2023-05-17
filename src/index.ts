@@ -29,13 +29,12 @@ import { Request } from "node-fetch";
 import newBoard from "./board/controllers/initiate-board";
 import placeTiles from "./tiles/controllers/place-tiles";
 import tileAmount from "./nft/controllers/get-tile-amount";
+import addAmount from "./nft/services/addAmount.service";
 
 const isHeroku = process.env.NODE_ENV === "production";
 const localPot = 3002;
 const port = isHeroku ? parseInt(process.env.PORT || "3001", 10) || 3002 : 3002;
 
-console.log("isHeroku", isHeroku);
-console.log("port", port);
 
 export const TEST_REDIS_CHANNEL = "b-b-board";
 
@@ -272,8 +271,8 @@ const startServer = () => {
       console.error(err);
       process.exit(1);
     }
-    console.log(`Server listening at ${address}`);
     startUpWebSocket();
+    // addAmount("1120","SP27F9EJH20K3GT6GHZG0RD08REZKY2TDMD6D9M2Z.btc-badgers-v2");
     checkLatestSuccesfultx();
   });
 };

@@ -5,16 +5,19 @@ const substractAmount = async (
   collectionId: string,
   amount: number
 ) => {
-  const collection = await redis.hGet(collectionId, tokenId.toString());
+  const collection = await redis.hGet("3:COLLECTION",collectionId);
   if (!collection) {
     return 0;
   }
 
-  const newAmount = parseInt(collection) - amount;
+  const parsedCollection = JSON.parse(collection);
+  const currentAmount = parsedCollection[tokenId];
+
+  const newAmount = parseInt(currentAmount) - amount;
   if (newAmount < 0) {
     return 0;
   }
-  await redis.hSet(collectionId, tokenId, newAmount);
+  await redis.hSet("3:COLLECTION", collectionId, JSON.stringify({ ...parsedCollection, [tokenId]: newAmount, }));
   return newAmount;
 };
 
