@@ -1,14 +1,16 @@
-import { parse } from "path";
 import redis from "../../redis";
-import { callReadOnlyFunction, listCV, uintCV } from "@stacks/transactions";
+import {
+  callReadOnlyFunction,
+  cvToJSON,
+  listCV,
+  someCV,
+  uintCV,
+} from "@stacks/transactions";
 import { CONTRACT_ADDRESSS, CONTRACT_NAME } from "../../stacks";
 import { StacksMainnet } from "@stacks/network";
-import {
-  contractPrincipalCV,
-  principalCV,
-} from "@stacks/transactions/dist/clarity/types/principalCV";
+import { principalCV } from "@stacks/transactions/dist/clarity/types/principalCV";
 
-const addAmount = async (tokenId: string, collectionId: string) => {
+const addAmount = async () => {
   // get all the collections
   const collections = await redis.hGetAll("3:COLLECTION");
   console.log("collections", collections);
@@ -29,30 +31,39 @@ const addAmount = async (tokenId: string, collectionId: string) => {
         if (nftsToCheckBalance[index].length > 4) {
           index = index + 1;
         }
-        nftsToCheckBalance[index].push(uintCV(token));
+        nftsToCheckBalance[index].push({
+          stxVal: someCV(uintCV(token)),
+          jsVal: token,
+          collection:key
+        });
         return nftsToCheckBalance;
       })
     ).then((nftsToCheckBalance) => {
-      console.log("nftsToCheckBalance", nftsToCheckBalance[0]);
       return nftsToCheckBalance[0];
     });
 
-    console.log("promise", promise);
+    promise.forEach(async (list: any) => {
+      const readOnlyCallBoardIndex = await callReadOnlyFunction({
+        contractName: CONTRACT_NAME,
+        contractAddress: CONTRACT_ADDRESSS,
+        functionName: "get-5-item-balance",
+        functionArgs: [
+          principalCV(key),
+          listCV(list.map((x: any) => x.stxVal)),
+        ],
+        senderAddress: "SP2MYPTSQE3NN1HYDQWB1G06G20E6KFTDWWMEG93W",
+        network: new StacksMainnet(),
+      });
+      const cleanValue = cvToJSON(readOnlyCallBoardIndex).value.value;
 
-    await Promise.all(
-      promise.forEach(async (list: any) => {
-        console.log("list", principalCV(key), listCV(list));
-        const readOnlyCallBoardIndex = await callReadOnlyFunction({
-          contractName: CONTRACT_NAME,
-          contractAddress: CONTRACT_ADDRESSS,
-          functionName: "get-5-item-balance",
-          functionArgs: [principalCV(key), listCV(list)],
-          senderAddress: "SP2MYPTSQE3NN1HYDQWB1G06G20E6KFTDWWMEG93W",
-          network: new StacksMainnet(),
-        });
-        console.log("readOnlyCallBoardIndex", readOnlyCallBoardIndex);
-      })
-    );
+      cleanValue.forEach(async (value: any, index: number) => {
+        const tileAmount = parseInt(value.value);
+        const tokenId = list[index].jsVal;
+        const collectionId = list[index].collection;
+        const data = { [tokenId]: tileAmount };
+        await redis.hSet("3:COLLECTION", collectionId, JSON.stringify(data));
+      });
+    });
   });
   return 0;
 };

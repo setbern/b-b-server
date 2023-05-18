@@ -13,7 +13,6 @@ const getTileAmount = async (tokenId: string, collectionId: string) => {
         "SP27F9EJH20K3GT6GHZG0RD08REZKY2TDMD6D9M2Z.btc-badgers-v2"
     ) {
       const data = { [tokenId]: 12 };
-      console.log(data)
       await redis.hSet("3:COLLECTION", collectionId, JSON.stringify(data));
       return 12;
     }

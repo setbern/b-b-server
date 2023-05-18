@@ -1,4 +1,5 @@
 import { PostTilesQuery, TEST_REDIS_CHANNEL } from "..";
+import addAmount from "../nft/services/addAmount.service";
 import substractAmount from "../nft/services/substractAmount.service";
 import redis from "../redis";
 import {
@@ -59,6 +60,7 @@ export const checkPendingTiles = async () => {
 
 export const checkLatestSuccesfultx = async () => {
   try {
+    
     // get the latest block
     const initalWalletFetchHolding = (await getLatestTxFromBoard(0)) as any;
 
@@ -102,7 +104,7 @@ export const checkLatestSuccesfultx = async () => {
       });
 
     await checkingPendingTilesInHash("3", filteredItems);
-
+    await addAmount();
     return "yeet";
   } catch (err) {
     console.log("checkLatestSuccesfultx", err);
