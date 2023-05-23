@@ -13,14 +13,12 @@ import { principalCV } from "@stacks/transactions/dist/clarity/types/principalCV
 const addAmount = async () => {
   // get all the collections
   const collections = await redis.hGetAll("3:COLLECTION");
-  console.log("collections", collections);
   // get the new balance of token in the collection
   Object.keys(collections).forEach(async (key) => {
     const parsedCollection = JSON.parse(collections[key]);
     const [collectionAddress, collectionName] = key.split(".");
     // check if collection is a badger
 
-    // console.log("nftsToCheckBalance", nftsToCheckBalance);
     const promise = await Promise.all(
       Object.keys(parsedCollection).map((token) => {
         const nftsToCheckBalance: any = [];
