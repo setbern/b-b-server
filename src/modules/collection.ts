@@ -102,9 +102,9 @@ export const checkLatestSuccesfultx = async () => {
 
         return txIdWithout0x;
       });
-
     await checkingPendingTilesInHash("3", filteredItems);
     await addAmount();
+    console.log('finished checking')
     return "yeet";
   } catch (err) {
     console.log("checkLatestSuccesfultx", err);
@@ -123,6 +123,7 @@ const checkingPendingTilesInHash = async (
   approvedTx: string[]
 ) => {
   try {
+    console.log('approved txs', approvedTx)
     
     // get the hash of the specfic collection
     const pendingTiles = (await fetchHash(
