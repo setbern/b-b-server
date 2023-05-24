@@ -54,6 +54,7 @@ const addAmount = async () => {
                 const rawCollection = await redis_1.default.hGet("3:COLLECTION", collectionId);
                 const collection = JSON.parse(rawCollection);
                 const data = Object.assign(Object.assign({}, collection), { [tokenId]: tileAmount });
+                console.log(data);
                 await redis_1.default.hSet("3:COLLECTION", collectionId, JSON.stringify(data));
             });
         });

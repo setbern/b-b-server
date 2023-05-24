@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkPendingByAddress = exports.updateCollectionMeta = exports.createNewCollection = exports.startCollection = exports.checkPendingTilesFromMicoblockUpdates = exports.checkLatestSuccesfultx = exports.checkPendingTiles = void 0;
 const addAmount_service_1 = __importDefault(require("../nft/services/addAmount.service"));
-const substractAmount_service_1 = __importDefault(require("../nft/services/substractAmount.service"));
 const redis_1 = __importDefault(require("../redis"));
 const stacks_1 = require("../stacks");
 const RedisHelpers_1 = require("./RedisHelpers");
@@ -168,7 +167,7 @@ const convertPendingTileToApproved = async (tiles) => {
             }
             // remove the peding tx from the pending collection hash
             const deltedKeyHash = await redis_1.default.hDel(tile.collectionId + ":PENDING", tile.txId);
-            await (0, substractAmount_service_1.default)(tile.tokenId, tile.collection, 1);
+            // await substractAmount(tile.tokenId as number, tile.collection as string, 1);
         }
     }
     catch (err) {

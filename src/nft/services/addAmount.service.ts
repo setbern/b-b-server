@@ -62,7 +62,7 @@ const addAmount = async () => {
         const collection = JSON.parse(rawCollection as string);
 
         const data = {...collection, [tokenId]: tileAmount };
-
+        console.log(data)
         await redis.hSet("3:COLLECTION", collectionId, JSON.stringify(data));
       });
     });
