@@ -58,7 +58,11 @@ const addAmount = async () => {
         const tileAmount = parseInt(value.value);
         const tokenId = list[index].jsVal;
         const collectionId = list[index].collection;
-        const data = { [tokenId]: tileAmount };
+        const rawCollection = await redis.hGet("3:COLLECTION", collectionId);
+        const collection = JSON.parse(rawCollection as string);
+
+        const data = {...collection, [tokenId]: tileAmount };
+
         await redis.hSet("3:COLLECTION", collectionId, JSON.stringify(data));
       });
     });
