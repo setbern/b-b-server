@@ -16,45 +16,46 @@ const node_cron_1 = __importDefault(require("node-cron"));
 const initiate_board_1 = __importDefault(require("./board/controllers/initiate-board"));
 const place_tiles_1 = __importDefault(require("./tiles/controllers/place-tiles"));
 const get_tile_amount_1 = __importDefault(require("./nft/controllers/get-tile-amount"));
+const addAmount_service_1 = __importDefault(require("./nft/services/addAmount.service"));
 const update_tile_amount_1 = __importDefault(require("./nft/controllers/update-tile-amount"));
-const isHeroku = process.env.NODE_ENV === "production";
+const isHeroku = process.env.NODE_ENV === 'production';
 const localPot = 3002;
-const port = isHeroku ? parseInt(process.env.PORT || "3001", 10) || 3002 : 3002;
-exports.TEST_REDIS_CHANNEL = "b-b-board";
+const port = isHeroku ? parseInt(process.env.PORT || '3001', 10) || 3002 : 3002;
+exports.TEST_REDIS_CHANNEL = 'b-b-board';
 const startServer = () => {
     const server = (0, fastify_1.default)({
         logger: true,
         ajv: {
             customOptions: {
-                coerceTypes: "array",
+                coerceTypes: 'array',
             },
         },
     });
     server.register(cors_1.fastifyCors, {
         origin: [
-            "http://localhost:3000",
-            "http://localhost:3001",
-            "https://badger-board.vercel.app",
-            "https://badger-board-git-dev-setteam.vercel.app",
+            'http://localhost:3000',
+            'http://localhost:3001',
+            'https://badger-board.vercel.app',
+            'https://badger-board-git-dev-setteam.vercel.app',
         ],
-        methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     });
     server.register(fastify_socket_io_1.default, {
         cors: {
             origin: [
-                "http://localhost:3000",
-                "http://localhost:3001",
-                "https://badger-board.vercel.app",
-                "https://badger-board-git-dev-setteam.vercel.app",
+                'http://localhost:3000',
+                'http://localhost:3001',
+                'https://badger-board.vercel.app',
+                'https://badger-board-git-dev-setteam.vercel.app',
             ],
-            methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+            methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
         },
     });
-    server.get("/tiles", {}, async (request, reply) => {
+    server.get('/tiles', {}, async (request, reply) => {
         const tiles = await (0, Tile_1.fetchAllTiles)();
         reply.send({ tiles });
     });
-    server.get("/pending-tiles", {}, async (req, reply) => {
+    server.get('/pending-tiles', {}, async (req, reply) => {
         const address = req.query.address;
         if (address) {
             const tiles = await (0, Tile_1.fetchPendingTilesByAddress)(address);
@@ -62,7 +63,7 @@ const startServer = () => {
         }
         return reply.send({ tiles: {} });
     });
-    server.get("/used-tiles", {}, async (req, reply) => {
+    server.get('/used-tiles', {}, async (req, reply) => {
         const address = req.query.address;
         if (address) {
             const tiles = await (0, Tile_1.fetchUsedTilesByAddress)(address);
@@ -70,21 +71,21 @@ const startServer = () => {
         }
         return reply.send({ tiles: 0 });
     });
-    server.post("/newCollection", {}, async (req, reply) => {
+    server.post('/newCollection', {}, async (req, reply) => {
         return (0, collection_1.createNewCollection)();
     });
-    server.post("/checkPending", {}, async (req, reply) => {
+    server.post('/checkPending', {}, async (req, reply) => {
         return (0, collection_1.checkPendingTiles)();
     });
-    server.get("/checkPendingByAddress", {}, async (req, reply) => {
-        const pending = await (0, collection_1.checkPendingByAddress)("1");
-        reply.send({ status: "ok", pending });
+    server.get('/checkPendingByAddress', {}, async (req, reply) => {
+        const pending = await (0, collection_1.checkPendingByAddress)('1');
+        reply.send({ status: 'ok', pending });
     });
-    server.post("/startCollection", {
+    server.post('/startCollection', {
         preValidation: (req, reply, done) => {
             const { collectionId } = req.body;
             if (!collectionId) {
-                reply.code(400).send({ status: "missing collectionId" });
+                reply.code(400).send({ status: 'missing collectionId' });
                 return;
             }
             done();
@@ -143,46 +144,46 @@ const startServer = () => {
       }
     );
     */
-    server.get("/", (req, reply) => {
-        server.io.to("room1").emit("message", { hello: "world" });
-        return "yeet";
+    server.get('/', (req, reply) => {
+        server.io.to('room1').emit('message', { hello: 'world' });
+        return 'yeet';
     });
     server.ready().then(() => {
         // we need to wait for the server to be ready, else `server.io` is undefined
-        server.io.on("connection", (socket) => {
+        server.io.on('connection', (socket) => {
             socket.join(exports.TEST_REDIS_CHANNEL);
-            socket.on("message", (data) => {
-                socket.emit("hello", "what is going on");
+            socket.on('message', (data) => {
+                socket.emit('hello', 'what is going on');
             });
-            socket.on("disconnect", () => {
-                console.log("user disconnected");
+            socket.on('disconnect', () => {
+                console.log('user disconnected');
             });
         });
         (async () => {
             const subscribeClient = redis_1.default.duplicate();
-            redis_1.default.on("error", (err) => {
+            redis_1.default.on('error', (err) => {
                 console.error(`Redis subscribeClient  err ${err}`);
                 //redis.connect();
             });
-            redis_1.default.on("reconnecting", (params) => console.info(`Redis subscribeClient reconnecting, attempt ${params === null || params === void 0 ? void 0 : params.attempt}`));
-            redis_1.default.on("connect", () => console.info("Redis subscribeClient connected"));
-            redis_1.default.on("ready", () => console.info("Redis subscribeClient ready"));
-            redis_1.default.on("end", () => console.info("Redis subscribeClient connection closed"));
+            redis_1.default.on('reconnecting', (params) => console.info(`Redis subscribeClient reconnecting, attempt ${params === null || params === void 0 ? void 0 : params.attempt}`));
+            redis_1.default.on('connect', () => console.info('Redis subscribeClient connected'));
+            redis_1.default.on('ready', () => console.info('Redis subscribeClient ready'));
+            redis_1.default.on('end', () => console.info('Redis subscribeClient connection closed'));
             await redis_1.default.connect();
             await subscribeClient.connect();
-            await subscribeClient.subscribe("b-b-board", async (tiles) => {
+            await subscribeClient.subscribe('b-b-board', async (tiles) => {
                 server.io
                     .to(exports.TEST_REDIS_CHANNEL)
-                    .emit("b-b-board", { latestTiles: tiles });
+                    .emit('b-b-board', { latestTiles: tiles });
             });
-            await subscribeClient.subscribe("b-b-board-pending", async (tiles) => {
+            await subscribeClient.subscribe('b-b-board-pending', async (tiles) => {
                 server.io
                     .to(exports.TEST_REDIS_CHANNEL)
-                    .emit("b-b-board-pending", { latestTiles: tiles });
+                    .emit('b-b-board-pending', { latestTiles: tiles });
             });
         })();
     });
-    server.listen({ port: port, host: "0.0.0.0" }, (err, address) => {
+    server.listen({ port: port, host: '0.0.0.0' }, (err, address) => {
         if (err) {
             console.error(err);
             process.exit(1);
@@ -193,10 +194,10 @@ const startServer = () => {
 };
 node_cron_1.default.schedule('* * * * *', () => {
     // runs every minute
-    // addAmount();
+    (0, addAmount_service_1.default)();
 }, {
     scheduled: true,
-    timezone: "America/New_York"
+    timezone: 'America/New_York',
 });
 startServer();
 //# sourceMappingURL=index.js.map

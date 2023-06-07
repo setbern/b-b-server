@@ -73,31 +73,33 @@ const addAmount = async () => {
         })).then(() => {
             return nftsToCheckBalance;
         });
-        console.log('promise', promise);
         promise.forEach(async (list) => {
-            console.log('list', list);
+            const listcv = (0, transactions_1.listCV)(list.map((x) => x.stxVal));
             // call the contract
-            const readOnlyCallBoardIndex = await (0, transactions_1.callReadOnlyFunction)({
-                contractName: stacks_1.CONTRACT_NAME,
-                contractAddress: stacks_1.CONTRACT_ADDRESSS,
-                functionName: 'get-5-item-balance',
-                functionArgs: [
-                    (0, principalCV_1.principalCV)(key),
-                    (0, transactions_1.listCV)(list.map((x) => x.stxVal)),
-                ],
-                senderAddress: 'SP2MYPTSQE3NN1HYDQWB1G06G20E6KFTDWWMEG93W',
-                network: new network_1.StacksMainnet(),
-            });
-            const cleanValue = (0, transactions_1.cvToJSON)(readOnlyCallBoardIndex).value.value;
-            cleanValue.forEach(async (value, index) => {
-                const tileAmount = parseInt(value.value);
-                const tokenId = list[index].jsVal;
-                const collectionId = list[index].collection;
-                const rawCollection = await redis_1.default.hGet('3:COLLECTION', collectionId);
-                const collection = JSON.parse(rawCollection);
-                const data = Object.assign(Object.assign({}, collection), { [tokenId]: { amount: tileAmount, checked: true } });
-                await redis_1.default.hSet('3:COLLECTION', collectionId, JSON.stringify(data));
-            });
+            try {
+                const readOnlyCallBoardIndex = await (0, transactions_1.callReadOnlyFunction)({
+                    contractName: stacks_1.CONTRACT_NAME,
+                    contractAddress: stacks_1.CONTRACT_ADDRESSS,
+                    functionName: 'get-5-item-balance',
+                    functionArgs: [(0, principalCV_1.principalCV)(key), listcv],
+                    senderAddress: 'SP2MYPTSQE3NN1HYDQWB1G06G20E6KFTDWWMEG93W',
+                    network: new network_1.StacksMainnet(),
+                });
+                const cleanValue = (0, transactions_1.cvToJSON)(readOnlyCallBoardIndex).value.value;
+                console.log('cleanValue', cleanValue);
+                cleanValue.forEach(async (value, index) => {
+                    const tileAmount = parseInt(value.value);
+                    const tokenId = list[index].jsVal;
+                    const collectionId = list[index].collection;
+                    const rawCollection = await redis_1.default.hGet('3:COLLECTION', collectionId);
+                    const collection = JSON.parse(rawCollection);
+                    const data = Object.assign(Object.assign({}, collection), { [tokenId]: { amount: tileAmount, checked: true } });
+                    await redis_1.default.hSet('3:COLLECTION', collectionId, JSON.stringify(data));
+                });
+            }
+            catch (error) {
+                console.log('error', error);
+            }
         });
     });
     console.log('done cron job');

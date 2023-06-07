@@ -167,6 +167,7 @@ const convertPendingTileToApproved = async (tiles) => {
             }
             // remove the peding tx from the pending collection hash
             const deltedKeyHash = await redis_1.default.hDel(tile.collectionId + ":PENDING", tile.txId);
+            console.log('tile', tile);
             await (0, substractAmount_service_1.default)(tile.tokenId, tile.collection, 1);
         }
     }

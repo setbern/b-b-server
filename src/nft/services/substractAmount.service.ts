@@ -12,6 +12,7 @@ const substractAmount = async (
 
   const parsedCollection = JSON.parse(collection);
   const currentAmount = parsedCollection[tokenId].amount;
+  console.log('currentAmount', currentAmount);
 
   const newAmount = parseInt(currentAmount) - amount;
   if (newAmount < 0) {
