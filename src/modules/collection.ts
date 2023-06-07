@@ -1,7 +1,8 @@
-import { PostTilesQuery, TEST_REDIS_CHANNEL } from "..";
-import addAmount from "../nft/services/addAmount.service";
-import substractAmount from "../nft/services/substractAmount.service";
-import redis from "../redis";
+import { object } from 'zod';
+import { PostTilesQuery, TEST_REDIS_CHANNEL } from '..';
+import addAmount from '../nft/services/addAmount.service';
+import substractAmount from '../nft/services/substractAmount.service';
+import redis from '../redis';
 import {
   getBlockInfo,
   getBnsName,
@@ -9,8 +10,8 @@ import {
   getLatestTxFromAddress,
   getLatestTxFromBoard,
   STACKS_API,
-} from "../stacks";
-import { fetchHash, getKeyAtHash } from "./RedisHelpers";
+} from '../stacks';
+import { fetchHash, getKeyAtHash } from './RedisHelpers';
 import {
   APPROVED_TILE,
   COLLECTION,
@@ -19,7 +20,7 @@ import {
   COLLECTION_STATUS,
   PENDING_TILE,
   PENDING_TX,
-} from "./Tile";
+} from './Tile';
 
 export const checkPendingTiles = async () => {
   try {
@@ -40,11 +41,11 @@ export const checkPendingTiles = async () => {
       // fetch all the pending tiles for each active collection
       const collections = (await fetchHash(collectionsHashKey)) as COLLECTION[];
       if (!collections) {
-        return { status: "no collections" };
+        return { status: 'no collections' };
       }
 
       for (const collection in collections) {
-        const collectionId = collections[collection].collectionId + "";
+        const collectionId = collections[collection].collectionId + '';
         await checkingPendingTilesInHash(
           collectionId,
           lastThreeBlocksApprovedTx
@@ -52,15 +53,14 @@ export const checkPendingTiles = async () => {
       }
     }
 
-    return { status: "yee" };
+    return { status: 'yee' };
   } catch (err) {
-    console.log("checkPendingTiles", err);
+    console.log('checkPendingTiles', err);
   }
 };
 
 export const checkLatestSuccesfultx = async () => {
   try {
-    
     // get the latest block
     const initalWalletFetchHolding = (await getLatestTxFromBoard(0)) as any;
 
@@ -82,11 +82,11 @@ export const checkLatestSuccesfultx = async () => {
 
     const filteredItems = totalFetchedAssets
       .filter((item: any) => {
-        if (item.tx_status === "success" && item.tx_type === "contract_call") {
+        if (item.tx_status === 'success' && item.tx_type === 'contract_call') {
           if (item.contract_call.function_name) {
             if (
               item.contract_call.function_name ===
-              "place-tiles-many-collections"
+              'place-tiles-many-collections'
             ) {
               return true;
             }
@@ -102,20 +102,20 @@ export const checkLatestSuccesfultx = async () => {
 
         return txIdWithout0x;
       });
-    await checkingPendingTilesInHash("3", filteredItems);
+    await checkingPendingTilesInHash('3', filteredItems);
     // await addAmount();
-    console.log('finished checking')
-    return "yeet";
+    console.log('finished checking');
+    return 'yeet';
   } catch (err) {
-    console.log("checkLatestSuccesfultx", err);
+    console.log('checkLatestSuccesfultx', err);
   }
 };
 export const checkPendingTilesFromMicoblockUpdates = async (txs: string[]) => {
   try {
-    const collectionId = "3";
+    const collectionId = '3';
     const runIt = await checkingPendingTilesInHash(collectionId, txs);
   } catch (err) {
-    console.log("err", err);
+    console.log('err', err);
   }
 };
 const checkingPendingTilesInHash = async (
@@ -123,14 +123,14 @@ const checkingPendingTilesInHash = async (
   approvedTx: string[]
 ) => {
   try {
-    console.log('approved txs', approvedTx)
-    
+    console.log('approved txs', approvedTx);
+
     // get the hash of the specfic collection
     const pendingTiles = (await fetchHash(
-      collectionId + ":PENDING"
+      collectionId + ':PENDING'
     )) as PENDING_TX[];
     if (!pendingTiles) {
-      return { status: "no pending tiles" };
+      return { status: 'no pending tiles' };
     }
     // check if any of the pending tiles exist in the last three blocks
 
@@ -150,7 +150,7 @@ const checkingPendingTilesInHash = async (
     }
     const helperFunc = await convertPendingTileToApproved(approvedTiles);
   } catch (err) {
-    console.log("checkingPendingTilesInHash", err);
+    console.log('checkingPendingTilesInHash', err);
   }
 };
 
@@ -227,11 +227,34 @@ const convertPendingTileToApproved = async (tiles: PENDING_TX[]) => {
         tile.txId
       );
 
-      console.log('tile', tile)
-      await substractAmount(tile.tokenId as number, tile.collection as string, 1);
+      const tokenCounts: any = {};
+
+      tile.tiles.forEach((obj) => {
+        const tokenId = obj.tokenId as number;
+        const collection = obj.collection as string;
+        if (tokenId in tokenCounts) {
+          tokenCounts[tokenId] = {
+            collection: tile.collection,
+            count: tokenCounts[tokenId].count + 1,
+          };
+        } else {
+          tokenCounts[tokenId] = { collection: tile.collection, count: 1 };
+        }
+      });
+
+      Object.keys(tokenCounts).forEach(async (tokenId) => {
+        const tokenCount = tokenCounts[parseInt(tokenId)];
+        const tileCount = tokenCount.count;
+        const collection = tokenCount.collection;
+        const substractedAmount = await substractAmount(
+          parseInt(tokenId),
+          collection,
+          tileCount
+        );
+      });
     }
   } catch (err) {
-    console.log("convertPendingTileToApproved", err);
+    console.log('convertPendingTileToApproved', err);
   }
 };
 
@@ -261,15 +284,15 @@ export const startCollection = async (collectionId: string) => {
         JSON.stringify(latestMeta)
       );
       return {
-        status: "success",
+        status: 'success',
       };
     } else {
-      throw new Error("no latest block found");
+      throw new Error('no latest block found');
     }
   } catch (err) {
-    console.log("err", err);
+    console.log('err', err);
     return {
-      status: "Error",
+      status: 'Error',
       error: err,
     };
   }
@@ -285,7 +308,7 @@ export const createNewCollection = async () => {
     const collectionId = collectionLength + 1;
     const collectionData = {
       collectionId: collectionId,
-      name: "test",
+      name: 'test',
       latestBlockChecked: 0,
       startedBlock: 0,
       endBlock: 0,
@@ -297,12 +320,12 @@ export const createNewCollection = async () => {
     );
 
     return {
-      status: "success",
+      status: 'success',
       collectionId: collectionLength,
     };
   } catch (err) {
-    console.log("error creating new collection", err);
-    return { status: "error", collectionId: 0 };
+    console.log('error creating new collection', err);
+    return { status: 'error', collectionId: 0 };
   }
 };
 
@@ -313,7 +336,7 @@ export const updateCollectionMeta = async (collectionId: number) => {
 
     // find collection by id
   } catch (err) {
-    console.log("error updating collection meta", err);
+    console.log('error updating collection meta', err);
   }
 };
 

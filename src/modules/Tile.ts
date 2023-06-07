@@ -16,6 +16,8 @@ export type Tile = {
 export type Tile_ = {
   tileId: number;
   color: string;
+  tokenId?: number;
+  collection?: string;
 };
 export type CleanTiles = {
   txId: string;
