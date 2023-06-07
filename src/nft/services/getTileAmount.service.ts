@@ -12,14 +12,14 @@ const getTileAmount = async (tokenId: string, collectionId: string) => {
       collectionId ===
         'SP27F9EJH20K3GT6GHZG0RD08REZKY2TDMD6D9M2Z.btc-badgers-v2'
     ) {
-      const data = { [tokenId]: { amount: 12, checked: true } };
+      const data = { [tokenId]: { amount: 12, checked: false } };
       await redis.hSet('3:COLLECTION', collectionId, JSON.stringify(data));
       return 12;
     }
 
     // save the new token id to that collection
 
-    const data = { [tokenId]: { amount: 6, checked: true } };
+    const data = { [tokenId]: { amount: 6, checked: false } };
     await redis.hSet('3:COLLECTION', collectionId, JSON.stringify(data));
     return 6;
   }
@@ -34,14 +34,14 @@ const getTileAmount = async (tokenId: string, collectionId: string) => {
       collectionId ===
         'SP27F9EJH20K3GT6GHZG0RD08REZKY2TDMD6D9M2Z.btc-badgers-v2'
     ) {
-      const data = { ...collection, [tokenId]: { amount: 12, checked: true } };
+      const data = { ...collection, [tokenId]: { amount: 12, checked: false } };
       await redis.hSet('3:COLLECTION', collectionId, JSON.stringify(data));
       return 12;
     }
 
     // save the new token id to that collection
 
-    const data = { ...collection, [tokenId]: { amount: 6, checked: true } };
+    const data = { ...collection, [tokenId]: { amount: 6, checked: false } };
     await redis.hSet('3:COLLECTION', collectionId, JSON.stringify(data));
     return 6;
   }
