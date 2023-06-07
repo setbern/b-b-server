@@ -30,13 +30,11 @@ const addAmount = async () => {
         // if the max of 10 calls if reached, finish loop
         if (nftsToCheckBalance.length > 10) return;
 
-
         // is the token has been checked, return
-        if(checked) return;
+        if (checked) return;
 
         // if the token has not been checked, add it to the list of tokens to check
         if (nftsToCheckBalance.length === 0) {
-
           return nftsToCheckBalance.push([
             {
               stxVal: someCV(uintCV(token)),
@@ -53,7 +51,7 @@ const addAmount = async () => {
         const current = nftsToCheckBalance[index];
         const lastCollection = current[current.length - 1].collection;
 
-        if(lastCollection !== key) {
+        if (lastCollection !== key) {
           index = index + 1;
           nftsToCheckBalance[index] = [
             {
@@ -86,19 +84,20 @@ const addAmount = async () => {
     ).then(() => {
       return nftsToCheckBalance;
     });
+    console.log('promise', promise);
 
     promise.forEach(async (list: any) => {
-
+      console.log('list', list);
       // call the contract
       const readOnlyCallBoardIndex = await callReadOnlyFunction({
         contractName: CONTRACT_NAME,
         contractAddress: CONTRACT_ADDRESSS,
-        functionName: "get-5-item-balance",
+        functionName: 'get-5-item-balance',
         functionArgs: [
           principalCV(key),
           listCV(list.map((x: any) => x.stxVal)),
         ],
-        senderAddress: "SP2MYPTSQE3NN1HYDQWB1G06G20E6KFTDWWMEG93W",
+        senderAddress: 'SP2MYPTSQE3NN1HYDQWB1G06G20E6KFTDWWMEG93W',
         network: new StacksMainnet(),
       });
       const cleanValue = cvToJSON(readOnlyCallBoardIndex).value.value;
@@ -107,15 +106,18 @@ const addAmount = async () => {
         const tileAmount = parseInt(value.value);
         const tokenId = list[index].jsVal;
         const collectionId = list[index].collection;
-        const rawCollection = await redis.hGet("3:COLLECTION", collectionId);
+        const rawCollection = await redis.hGet('3:COLLECTION', collectionId);
         const collection = JSON.parse(rawCollection as string);
 
-        const data = { ...collection, [tokenId]: {amount: tileAmount, checked: true} };
-        await redis.hSet("3:COLLECTION", collectionId, JSON.stringify(data));
+        const data = {
+          ...collection,
+          [tokenId]: { amount: tileAmount, checked: true },
+        };
+        await redis.hSet('3:COLLECTION', collectionId, JSON.stringify(data));
       });
     });
   });
-  console.log('done cron job')
+  console.log('done cron job');
   return 0;
 };
 

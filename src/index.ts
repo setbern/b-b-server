@@ -277,7 +277,7 @@ const startServer = () => {
 
 cron.schedule('* * * * *', () => {
   // runs every minute
-  addAmount();
+  // addAmount();
 }, {
   scheduled: true,
   timezone: "America/New_York"
