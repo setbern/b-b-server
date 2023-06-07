@@ -275,7 +275,7 @@ cron.schedule(
   '* * * * *',
   () => {
     // runs every minute
-    addAmount();
+    // addAmount();
   },
   {
     scheduled: true,
