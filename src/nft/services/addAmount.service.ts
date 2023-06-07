@@ -32,14 +32,14 @@ const addAmount = async () => {
 
 
         // is the token has been checked, return
-        // if(checked) return;
+        if(checked) return;
 
         // if the token has not been checked, add it to the list of tokens to check
         if (nftsToCheckBalance.length === 0) {
 
           return nftsToCheckBalance.push([
             {
-              // stxVal: someCV(uintCV(token)),
+              stxVal: someCV(uintCV(token)),
               jsVal: token,
               collection: key,
             },
@@ -115,6 +115,7 @@ const addAmount = async () => {
       });
     });
   });
+  console.log('done cron job')
   return 0;
 };
 

@@ -1,20 +1,17 @@
 import "./env";
 
 import fastify from "fastify";
-import cors, { fastifyCors } from "@fastify/cors";
+import  { fastifyCors } from "@fastify/cors";
 import fastifyIO from "fastify-socket.io";
 
 import { startUpWebSocket } from "./websockets";
-import { getContractLatestTX } from "./stacks";
 
 import redis from "./redis";
 import {
-  CleanTiles,
   EXISTING_SELECTED_TILE,
   fetchAllTiles,
   fetchPendingTilesByAddress,
   PENDING_SELECTED_TILE,
-  SELECTED_TILE,
   _addNewTile,
   fetchUsedTilesByAddress,
 } from "./modules/Tile";
@@ -25,11 +22,12 @@ import {
   createNewCollection,
   startCollection,
 } from "./modules/collection";
-import { Request } from "node-fetch";
+import cron from "node-cron";
 import newBoard from "./board/controllers/initiate-board";
 import placeTiles from "./tiles/controllers/place-tiles";
 import tileAmount from "./nft/controllers/get-tile-amount";
 import addAmount from "./nft/services/addAmount.service";
+import updateTileAmount from "./nft/controllers/update-tile-amount";
 
 const isHeroku = process.env.NODE_ENV === "production";
 const localPot = 3002;
@@ -158,6 +156,7 @@ const startServer = () => {
   void server.register(placeTiles);
 
   void server.register(tileAmount);
+  void server.register(updateTileAmount)
   /*
   server.post<{
     Body: string;
@@ -272,9 +271,16 @@ const startServer = () => {
       process.exit(1);
     }
     startUpWebSocket();
-    addAmount();
     checkLatestSuccesfultx();
   });
 };
+
+cron.schedule('* * * * *', () => {
+  // runs every minute
+  addAmount();
+}, {
+  scheduled: true,
+  timezone: "America/New_York"
+});
 
 startServer();
