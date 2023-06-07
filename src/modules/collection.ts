@@ -103,7 +103,7 @@ export const checkLatestSuccesfultx = async () => {
         return txIdWithout0x;
       });
     await checkingPendingTilesInHash("3", filteredItems);
-    await addAmount();
+    // await addAmount();
     console.log('finished checking')
     return "yeet";
   } catch (err) {

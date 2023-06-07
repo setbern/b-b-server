@@ -272,6 +272,7 @@ const startServer = () => {
       process.exit(1);
     }
     startUpWebSocket();
+    addAmount();
     checkLatestSuccesfultx();
   });
 };
