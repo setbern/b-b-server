@@ -12,9 +12,12 @@ const websockets_1 = require("./websockets");
 const redis_1 = __importDefault(require("./redis"));
 const Tile_1 = require("./modules/Tile");
 const collection_1 = require("./modules/collection");
+const node_cron_1 = __importDefault(require("node-cron"));
 const initiate_board_1 = __importDefault(require("./board/controllers/initiate-board"));
 const place_tiles_1 = __importDefault(require("./tiles/controllers/place-tiles"));
 const get_tile_amount_1 = __importDefault(require("./nft/controllers/get-tile-amount"));
+const addAmount_service_1 = __importDefault(require("./nft/services/addAmount.service"));
+const update_tile_amount_1 = __importDefault(require("./nft/controllers/update-tile-amount"));
 const isHeroku = process.env.NODE_ENV === "production";
 const localPot = 3002;
 const port = isHeroku ? parseInt(process.env.PORT || "3001", 10) || 3002 : 3002;
@@ -94,6 +97,7 @@ const startServer = () => {
     void server.register(initiate_board_1.default);
     void server.register(place_tiles_1.default);
     void server.register(get_tile_amount_1.default);
+    void server.register(update_tile_amount_1.default);
     /*
     server.post<{
       Body: string;
@@ -188,5 +192,12 @@ const startServer = () => {
         (0, collection_1.checkLatestSuccesfultx)();
     });
 };
+node_cron_1.default.schedule('* * * * *', () => {
+    // runs every minute
+    (0, addAmount_service_1.default)();
+}, {
+    scheduled: true,
+    timezone: "America/New_York"
+});
 startServer();
 //# sourceMappingURL=index.js.map

@@ -4,7 +4,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkPendingByAddress = exports.updateCollectionMeta = exports.createNewCollection = exports.startCollection = exports.checkPendingTilesFromMicoblockUpdates = exports.checkLatestSuccesfultx = exports.checkPendingTiles = void 0;
-const addAmount_service_1 = __importDefault(require("../nft/services/addAmount.service"));
 const redis_1 = __importDefault(require("../redis"));
 const stacks_1 = require("../stacks");
 const RedisHelpers_1 = require("./RedisHelpers");
@@ -75,7 +74,7 @@ const checkLatestSuccesfultx = async () => {
             return txIdWithout0x;
         });
         await checkingPendingTilesInHash("3", filteredItems);
-        await (0, addAmount_service_1.default)();
+        // await addAmount();
         console.log('finished checking');
         return "yeet";
     }
