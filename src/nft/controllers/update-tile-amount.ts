@@ -1,6 +1,5 @@
 import { FastifyPluginAsync } from 'fastify';
 import { _addNewTile } from '../../modules/Tile';
-import getTileAmount from '../services/getTileAmount.service';
 import addAmount from '../services/addAmount.service';
 
 const updateTileAmount: FastifyPluginAsync = async (fastify, _opts) => {

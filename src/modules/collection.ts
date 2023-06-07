@@ -227,7 +227,7 @@ const convertPendingTileToApproved = async (tiles: PENDING_TX[]) => {
         tile.txId
       );
 
-      // await substractAmount(tile.tokenId as number, tile.collection as string, 1);
+      await substractAmount(tile.tokenId as number, tile.collection as string, 1);
     }
   } catch (err) {
     console.log("convertPendingTileToApproved", err);
