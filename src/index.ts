@@ -277,7 +277,7 @@ cron.schedule(
   '* * * * *',
   () => {
     // runs every minute
-    addAmountTest();
+    // addAmountTest();
   },
   {
     scheduled: true,

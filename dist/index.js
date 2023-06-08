@@ -17,7 +17,6 @@ const initiate_board_1 = __importDefault(require("./board/controllers/initiate-b
 const place_tiles_1 = __importDefault(require("./tiles/controllers/place-tiles"));
 const get_tile_amount_1 = __importDefault(require("./nft/controllers/get-tile-amount"));
 const update_tile_amount_1 = __importDefault(require("./nft/controllers/update-tile-amount"));
-const addAmountTest_service_1 = __importDefault(require("./nft/services/addAmountTest.service"));
 const isHeroku = process.env.NODE_ENV === 'production';
 const localPot = 3002;
 const port = isHeroku ? parseInt(process.env.PORT || '3001', 10) || 3002 : 3002;
@@ -195,7 +194,7 @@ const startServer = () => {
 };
 node_cron_1.default.schedule('* * * * *', () => {
     // runs every minute
-    (0, addAmountTest_service_1.default)();
+    // addAmountTest();
 }, {
     scheduled: true,
     timezone: 'America/New_York',

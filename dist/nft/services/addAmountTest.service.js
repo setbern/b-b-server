@@ -51,7 +51,7 @@ const addAmountTest = async () => {
                 });
                 const cleanValue = (0, transactions_1.cvToJSON)(readOnlyCallBoardIndex).value.value;
                 console.log('cleanValue', cleanValue);
-                cleanValue.map(async (value, index) => {
+                await cleanValue.map(async (value, index) => {
                     const tileAmount = parseInt(value.value);
                     const tokenId = list[index].jsVal;
                     const collectionId = list[index].collection;
@@ -59,7 +59,6 @@ const addAmountTest = async () => {
                     const collection = JSON.parse(rawCollection);
                     const data = Object.assign(Object.assign({}, collection), { [tokenId]: { amount: tileAmount, checked: true } });
                     // console.log(data, tokenId, tileAmount);
-                    console.log('sleeping');
                     await redis_1.default.hSet('3:COLLECTION', collectionId, JSON.stringify(data));
                 });
             }

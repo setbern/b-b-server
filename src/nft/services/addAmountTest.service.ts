@@ -62,7 +62,7 @@ const addAmountTest = async () => {
 
         console.log('cleanValue', cleanValue);
 
-        cleanValue.map(async (value: any, index: number) => {
+        await cleanValue.map(async (value: any, index: number) => {
           const tileAmount = parseInt(value.value);
           const tokenId = list[index].jsVal;
           const collectionId = list[index].collection;
@@ -76,7 +76,6 @@ const addAmountTest = async () => {
 
           // console.log(data, tokenId, tileAmount);
 
-          console.log('sleeping');
           await redis.hSet('3:COLLECTION', collectionId, JSON.stringify(data));
         });
       } catch (error) {
