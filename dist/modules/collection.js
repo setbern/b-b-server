@@ -76,7 +76,7 @@ const checkLatestSuccesfultx = async () => {
         });
         await checkingPendingTilesInHash('3', filteredItems);
         // await addAmount();
-        console.log('finished checking');
+        console.log('finished checking', filteredItems);
         return 'yeet';
     }
     catch (err) {

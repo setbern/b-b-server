@@ -17,6 +17,7 @@ const initiate_board_1 = __importDefault(require("./board/controllers/initiate-b
 const place_tiles_1 = __importDefault(require("./tiles/controllers/place-tiles"));
 const get_tile_amount_1 = __importDefault(require("./nft/controllers/get-tile-amount"));
 const update_tile_amount_1 = __importDefault(require("./nft/controllers/update-tile-amount"));
+const blocks_1 = require("./modules/blocks");
 const isHeroku = process.env.NODE_ENV === 'production';
 const localPot = 3002;
 const port = isHeroku ? parseInt(process.env.PORT || '3001', 10) || 3002 : 3002;
@@ -188,13 +189,13 @@ const startServer = () => {
             process.exit(1);
         }
         (0, websockets_1.startUpWebSocket)();
-        (0, collection_1.checkLatestSuccesfultx)();
-        // addAmountTest()
+        // checkLatestSuccesfultx();
+        (0, blocks_1.checkLatestBlock)();
     });
 };
-node_cron_1.default.schedule('* * * * *', () => {
-    // runs every minute
-    // addAmountTest();
+node_cron_1.default.schedule('*/5 * * * *', () => {
+    // runs every 5 minutes
+    // checkLatestBlock()
 }, {
     scheduled: true,
     timezone: 'America/New_York',
