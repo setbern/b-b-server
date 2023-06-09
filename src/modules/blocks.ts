@@ -196,11 +196,11 @@ const convertPendingTileToApproved = async (tiles: PENDING_TX[]) => {
           txId: tile.txId,
           principal: tile.principal,
         };
-        const savedNewTile = await redis.hSet(
-          collectionStatusKey,
-          tile.tileId,
-          JSON.stringify(tileData)
-        );
+        // const savedNewTile = await redis.hSet(
+        //   collectionStatusKey,
+        //   tile.tileId,
+        //   JSON.stringify(tileData)
+        // );
       } else {
         // does not exist need to create it with its state
         const tileData: APPROVED_TILE = {
@@ -212,18 +212,18 @@ const convertPendingTileToApproved = async (tiles: PENDING_TX[]) => {
           principal: tile.principal,
         };
 
-        const savedNewTile = await redis.hSet(
-          collectionStatusKey,
-          tile.tileId,
-          JSON.stringify(tileData)
-        );
+        // const savedNewTile = await redis.hSet(
+        //   collectionStatusKey,
+        //   tile.tileId,
+        //   JSON.stringify(tileData)
+        // );
       }
 
       // remove the peding tx from the pending collection hash
-      const deltedKeyHash = await redis.hDel(
-        tile.collectionId + ':PENDING',
-        tile.txId
-      );
+    //   const deltedKeyHash = await redis.hDel(
+    //     tile.collectionId + ':PENDING',
+    //     tile.txId
+    //   );
 
       const tokenCounts: any = {};
 
@@ -240,16 +240,16 @@ const convertPendingTileToApproved = async (tiles: PENDING_TX[]) => {
         }
       });
 
-      Object.keys(tokenCounts).forEach(async (tokenId) => {
-        const tokenCount = tokenCounts[parseInt(tokenId)];
-        const tileCount = tokenCount.count;
-        const collection = tokenCount.collection;
-        const substractedAmount = await substractAmount(
-          parseInt(tokenId),
-          collection,
-          tileCount
-        );
-      });
+    //   Object.keys(tokenCounts).forEach(async (tokenId) => {
+    //     const tokenCount = tokenCounts[parseInt(tokenId)];
+    //     const tileCount = tokenCount.count;
+    //     const collection = tokenCount.collection;
+    //     const substractedAmount = await substractAmount(
+    //       parseInt(tokenId),
+    //       collection,
+    //       tileCount
+    //     );
+    //   });
     }
     return true;
   } catch (err) {
