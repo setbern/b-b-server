@@ -20,14 +20,14 @@ export const checkLatestBlock = async () => {
     'https://api.mainnet.hiro.so/extended/v1/block'
   );
 
-  //   const rawStacksBlocks = await fetch(
-  //     `https://api.mainnet.hiro.so/extended/v1/tx/block_height/108524`
-  //   );
+  // const rawStacksBlocks = await fetch(
+  //   `https://api.mainnet.hiro.so/extended/v1/tx/block_height/108754`
+  // );
   const stacksBlocks = await rawStacksBlocks.json();
-  //   const results = stacksBlocks.results.map((block) => block.tx_id);
+  // const results = stacksBlocks.results.map((block) => block.tx_id);
 
   const lastBlockFromStacks = stacksBlocks.results[0];
-  //   const lastBlockFromStacks = { txs: results };
+  // const lastBlockFromStacks = { txs: results };
 
   const blockHeight = stacksBlocks.results[0].height ?? 108524;
   //   if theres no latest block, set it to the latest block
@@ -39,6 +39,8 @@ export const checkLatestBlock = async () => {
   if (blockHeight > latestBlockHeight) {
     return processBlock(blockHeight, lastBlockFromStacks.txs);
   }
+  console.log(blockHeight);
+
   console.log('already processed block');
 };
 
@@ -58,13 +60,12 @@ export const processBlock = async (
 
     const approvedTransactions: PENDING_TX[] = [];
 
-    console.log('pendingTransactions', pendingTransactions);
+    // console.log('pendingTransactions', pendingTransactions, txsFromBlock);
 
     // check if the txId is in the approved txs
     for (const pendingTileKey in pendingTransactions) {
       const pendingTile = pendingTransactions[pendingTileKey];
       const pendingTileTxId = pendingTile.txId;
-      console.log('pendingTileTxId', pendingTileTxId);
 
       // check if the txId is in the last three blocks
       const approvedTxId = txsFromBlock.find(
@@ -90,7 +91,7 @@ export const processBlock = async (
       console.log('no converted');
       return;
     }
-    console.log('pendingTiles', approvedTransactions);
+    console.log('approved', approvedTransactions);
 
     // save the latest block once done
     await redis.set(`${boardId}:LATEST_BLOCK`, blockHeight);
@@ -98,59 +99,7 @@ export const processBlock = async (
     console.log('processBlock', err);
   }
 };
-
-export const checkLatestSuccessfulTx = async () => {
-  try {
-    // get the latest block
-    const initalWalletFetchHolding = (await getLatestTxFromBoard(0)) as any;
-
-    let totalFetchedAssets = [...initalWalletFetchHolding.results];
-    const totalAssetsInWallet = initalWalletFetchHolding.total;
-
-    console.log('totalAssetsInWallet', totalFetchedAssets);
-
-    if (totalAssetsInWallet >= 50) {
-      while (totalAssetsInWallet > totalFetchedAssets.length) {
-        const nextWalletFetchHolding = (await getLatestTxFromBoard(
-          totalFetchedAssets.length
-        )) as any;
-
-        totalFetchedAssets = [
-          ...totalFetchedAssets,
-          ...nextWalletFetchHolding.results,
-        ];
-      }
-    }
-
-    const filteredItems = totalFetchedAssets
-      .filter((item: any) => {
-        if (item.tx_status === 'success' && item.tx_type === 'contract_call') {
-          if (item.contract_call.function_name) {
-            if (
-              item.contract_call.function_name ===
-              'place-tiles-many-collections'
-            ) {
-              return true;
-            }
-          }
-        }
-        return false;
-      })
-      .map((d, i) => {
-        // reove ox from the tx_id
-        const txId = d.tx_id;
-        // remove first 2 character of string
-        const txIdWithout0x = txId.substring(2);
-
-        return txIdWithout0x;
-      });
-    //   await checkingPendingTilesInHash('3', filteredItems);
-    // await addAmount()
-    return filteredItems;
-  } catch (err) {
-    console.log('checkLatestSuccesfultx', err);
-  }
-};
+ 
 
 const convertPendingTileToApproved = async (tiles: PENDING_TX[]) => {
   try {
@@ -196,11 +145,11 @@ const convertPendingTileToApproved = async (tiles: PENDING_TX[]) => {
           txId: tile.txId,
           principal: tile.principal,
         };
-        // const savedNewTile = await redis.hSet(
-        //   collectionStatusKey,
-        //   tile.tileId,
-        //   JSON.stringify(tileData)
-        // );
+        const savedNewTile = await redis.hSet(
+          collectionStatusKey,
+          tile.tileId,
+          JSON.stringify(tileData)
+        );
       } else {
         // does not exist need to create it with its state
         const tileData: APPROVED_TILE = {
@@ -212,18 +161,18 @@ const convertPendingTileToApproved = async (tiles: PENDING_TX[]) => {
           principal: tile.principal,
         };
 
-        // const savedNewTile = await redis.hSet(
-        //   collectionStatusKey,
-        //   tile.tileId,
-        //   JSON.stringify(tileData)
-        // );
+        const savedNewTile = await redis.hSet(
+          collectionStatusKey,
+          tile.tileId,
+          JSON.stringify(tileData)
+        );
       }
 
-      // remove the peding tx from the pending collection hash
-    //   const deltedKeyHash = await redis.hDel(
-    //     tile.collectionId + ':PENDING',
-    //     tile.txId
-    //   );
+    //   remove the peding tx from the pending collection hash
+        const deltedKeyHash = await redis.hDel(
+          tile.collectionId + ':PENDING',
+          tile.txId
+        );
 
       const tokenCounts: any = {};
 
@@ -240,16 +189,16 @@ const convertPendingTileToApproved = async (tiles: PENDING_TX[]) => {
         }
       });
 
-    //   Object.keys(tokenCounts).forEach(async (tokenId) => {
-    //     const tokenCount = tokenCounts[parseInt(tokenId)];
-    //     const tileCount = tokenCount.count;
-    //     const collection = tokenCount.collection;
-    //     const substractedAmount = await substractAmount(
-    //       parseInt(tokenId),
-    //       collection,
-    //       tileCount
-    //     );
-    //   });
+      Object.keys(tokenCounts).forEach(async (tokenId) => {
+        const tokenCount = tokenCounts[parseInt(tokenId)];
+        const tileCount = tokenCount.count;
+        const collection = tokenCount.collection;
+        const substractedAmount = await substractAmount(
+          parseInt(tokenId),
+          collection,
+          tileCount
+        );
+      });
     }
     return true;
   } catch (err) {

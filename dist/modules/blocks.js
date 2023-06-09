@@ -3,9 +3,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkLatestSuccessfulTx = exports.processBlock = exports.checkLatestBlock = void 0;
+exports.processBlock = exports.checkLatestBlock = void 0;
+const substractAmount_service_1 = __importDefault(require("../nft/services/substractAmount.service"));
 const redis_1 = __importDefault(require("../redis"));
-const stacks_1 = require("../stacks");
 const RedisHelpers_1 = require("./RedisHelpers");
 const Tile_1 = require("./Tile");
 const boardId = '3';
@@ -15,13 +15,13 @@ const checkLatestBlock = async () => {
     const latestBlockHeight = await redis_1.default.get(`${boardId}:LATEST_BLOCK`);
     // last block in the hiro
     const rawStacksBlocks = await fetch('https://api.mainnet.hiro.so/extended/v1/block');
-    //   const rawStacksBlocks = await fetch(
-    //     `https://api.mainnet.hiro.so/extended/v1/tx/block_height/108524`
-    //   );
+    // const rawStacksBlocks = await fetch(
+    //   `https://api.mainnet.hiro.so/extended/v1/tx/block_height/108754`
+    // );
     const stacksBlocks = await rawStacksBlocks.json();
-    //   const results = stacksBlocks.results.map((block) => block.tx_id);
+    // const results = stacksBlocks.results.map((block) => block.tx_id);
     const lastBlockFromStacks = stacksBlocks.results[0];
-    //   const lastBlockFromStacks = { txs: results };
+    // const lastBlockFromStacks = { txs: results };
     const blockHeight = (_a = stacksBlocks.results[0].height) !== null && _a !== void 0 ? _a : 108524;
     //   if theres no latest block, set it to the latest block
     if (!latestBlockHeight) {
@@ -31,6 +31,7 @@ const checkLatestBlock = async () => {
     if (blockHeight > latestBlockHeight) {
         return (0, exports.processBlock)(blockHeight, lastBlockFromStacks.txs);
     }
+    console.log(blockHeight);
     console.log('already processed block');
 };
 exports.checkLatestBlock = checkLatestBlock;
@@ -43,12 +44,11 @@ const processBlock = async (blockHeight, txsFromBlock) => {
             return;
         }
         const approvedTransactions = [];
-        console.log('pendingTransactions', pendingTransactions);
+        // console.log('pendingTransactions', pendingTransactions, txsFromBlock);
         // check if the txId is in the approved txs
         for (const pendingTileKey in pendingTransactions) {
             const pendingTile = pendingTransactions[pendingTileKey];
             const pendingTileTxId = pendingTile.txId;
-            console.log('pendingTileTxId', pendingTileTxId);
             // check if the txId is in the last three blocks
             const approvedTxId = txsFromBlock.find((tx) => tx === `0x${pendingTileTxId}`);
             if (approvedTxId) {
@@ -67,7 +67,7 @@ const processBlock = async (blockHeight, txsFromBlock) => {
             console.log('no converted');
             return;
         }
-        console.log('pendingTiles', approvedTransactions);
+        console.log('approved', approvedTransactions);
         // save the latest block once done
         await redis_1.default.set(`${boardId}:LATEST_BLOCK`, blockHeight);
     }
@@ -76,50 +76,6 @@ const processBlock = async (blockHeight, txsFromBlock) => {
     }
 };
 exports.processBlock = processBlock;
-const checkLatestSuccessfulTx = async () => {
-    try {
-        // get the latest block
-        const initalWalletFetchHolding = (await (0, stacks_1.getLatestTxFromBoard)(0));
-        let totalFetchedAssets = [...initalWalletFetchHolding.results];
-        const totalAssetsInWallet = initalWalletFetchHolding.total;
-        console.log('totalAssetsInWallet', totalFetchedAssets);
-        if (totalAssetsInWallet >= 50) {
-            while (totalAssetsInWallet > totalFetchedAssets.length) {
-                const nextWalletFetchHolding = (await (0, stacks_1.getLatestTxFromBoard)(totalFetchedAssets.length));
-                totalFetchedAssets = [
-                    ...totalFetchedAssets,
-                    ...nextWalletFetchHolding.results,
-                ];
-            }
-        }
-        const filteredItems = totalFetchedAssets
-            .filter((item) => {
-            if (item.tx_status === 'success' && item.tx_type === 'contract_call') {
-                if (item.contract_call.function_name) {
-                    if (item.contract_call.function_name ===
-                        'place-tiles-many-collections') {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        })
-            .map((d, i) => {
-            // reove ox from the tx_id
-            const txId = d.tx_id;
-            // remove first 2 character of string
-            const txIdWithout0x = txId.substring(2);
-            return txIdWithout0x;
-        });
-        //   await checkingPendingTilesInHash('3', filteredItems);
-        // await addAmount()
-        return filteredItems;
-    }
-    catch (err) {
-        console.log('checkLatestSuccesfultx', err);
-    }
-};
-exports.checkLatestSuccessfulTx = checkLatestSuccessfulTx;
 const convertPendingTileToApproved = async (tiles) => {
     try {
         const flattenTiles = tiles.reduce((acc, tile) => {
@@ -151,11 +107,7 @@ const convertPendingTileToApproved = async (tiles) => {
                     txId: tile.txId,
                     principal: tile.principal,
                 };
-                // const savedNewTile = await redis.hSet(
-                //   collectionStatusKey,
-                //   tile.tileId,
-                //   JSON.stringify(tileData)
-                // );
+                const savedNewTile = await redis_1.default.hSet(collectionStatusKey, tile.tileId, JSON.stringify(tileData));
             }
             else {
                 // does not exist need to create it with its state
@@ -167,17 +119,10 @@ const convertPendingTileToApproved = async (tiles) => {
                     txId: tile.txId,
                     principal: tile.principal,
                 };
-                // const savedNewTile = await redis.hSet(
-                //   collectionStatusKey,
-                //   tile.tileId,
-                //   JSON.stringify(tileData)
-                // );
+                const savedNewTile = await redis_1.default.hSet(collectionStatusKey, tile.tileId, JSON.stringify(tileData));
             }
-            // remove the peding tx from the pending collection hash
-            //   const deltedKeyHash = await redis.hDel(
-            //     tile.collectionId + ':PENDING',
-            //     tile.txId
-            //   );
+            //   remove the peding tx from the pending collection hash
+            const deltedKeyHash = await redis_1.default.hDel(tile.collectionId + ':PENDING', tile.txId);
             const tokenCounts = {};
             tile.tiles.forEach((obj) => {
                 const tokenId = obj.tokenId;
@@ -192,16 +137,12 @@ const convertPendingTileToApproved = async (tiles) => {
                     tokenCounts[tokenId] = { collection: tile.collection, count: 1 };
                 }
             });
-            //   Object.keys(tokenCounts).forEach(async (tokenId) => {
-            //     const tokenCount = tokenCounts[parseInt(tokenId)];
-            //     const tileCount = tokenCount.count;
-            //     const collection = tokenCount.collection;
-            //     const substractedAmount = await substractAmount(
-            //       parseInt(tokenId),
-            //       collection,
-            //       tileCount
-            //     );
-            //   });
+            Object.keys(tokenCounts).forEach(async (tokenId) => {
+                const tokenCount = tokenCounts[parseInt(tokenId)];
+                const tileCount = tokenCount.count;
+                const collection = tokenCount.collection;
+                const substractedAmount = await (0, substractAmount_service_1.default)(parseInt(tokenId), collection, tileCount);
+            });
         }
         return true;
     }
