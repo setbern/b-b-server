@@ -190,7 +190,7 @@ const startServer = () => {
         }
         (0, websockets_1.startUpWebSocket)();
         // checkLatestSuccesfultx();
-        // checkLatestBlock()
+        (0, blocks_1.checkLatestBlock)();
     });
 };
 node_cron_1.default.schedule('*/5 * * * *', () => {

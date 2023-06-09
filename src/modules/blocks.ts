@@ -39,6 +39,7 @@ export const checkLatestBlock = async () => {
   if (blockHeight > latestBlockHeight) {
     return processBlock(blockHeight, lastBlockFromStacks.txs);
   }
+//   return processBlock(blockHeight, lastBlockFromStacks.txs);
   console.log(blockHeight);
 
   console.log('already processed block');

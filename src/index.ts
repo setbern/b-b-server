@@ -270,7 +270,7 @@ const startServer = () => {
     }
     startUpWebSocket();
     // checkLatestSuccesfultx();
-    // checkLatestBlock()
+    checkLatestBlock()
   });
 };
 
