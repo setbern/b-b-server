@@ -270,7 +270,6 @@ const startServer = () => {
     }
     startUpWebSocket();
     // checkLatestSuccesfultx();
-    checkLatestBlock()
   });
 };
 
@@ -278,7 +277,7 @@ cron.schedule(
   '*/5 * * * *',
   () => {
     // runs every 5 minutes
-    // checkLatestBlock()
+    checkLatestBlock()
   },
   {
     scheduled: true,

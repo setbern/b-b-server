@@ -190,12 +190,11 @@ const startServer = () => {
         }
         (0, websockets_1.startUpWebSocket)();
         // checkLatestSuccesfultx();
-        (0, blocks_1.checkLatestBlock)();
     });
 };
 node_cron_1.default.schedule('*/5 * * * *', () => {
     // runs every 5 minutes
-    // checkLatestBlock()
+    (0, blocks_1.checkLatestBlock)();
 }, {
     scheduled: true,
     timezone: 'America/New_York',
