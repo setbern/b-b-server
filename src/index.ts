@@ -29,6 +29,7 @@ import tileAmount from './nft/controllers/get-tile-amount';
 import addAmount from './nft/services/addAmount.service';
 import updateTileAmount from './nft/controllers/update-tile-amount';
 import addAmountTest from './nft/services/addAmountTest.service';
+import { checkLatestBlock } from './modules/blocks';
 
 const isHeroku = process.env.NODE_ENV === 'production';
 const localPot = 3002;
@@ -269,15 +270,15 @@ const startServer = () => {
     }
     startUpWebSocket();
     checkLatestSuccesfultx();
-    // addAmountTest()
+
   });
 };
 
 cron.schedule(
-  '* * * * *',
+  '*/5 * * * *',
   () => {
-    // runs every minute
-    // addAmountTest();
+    // runs every 5 minutes
+    checkLatestBlock()
   },
   {
     scheduled: true,
