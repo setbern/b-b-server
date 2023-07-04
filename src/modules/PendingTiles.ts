@@ -4,7 +4,6 @@ type PendingTile = {
   txId: string;
   tiles: Tile[];
   principal: string;
-  created_at: string;
 };
 
 

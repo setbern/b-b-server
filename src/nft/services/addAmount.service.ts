@@ -1,130 +1,68 @@
 import redis from '../../redis';
-import {
-  callReadOnlyFunction,
-  cvToJSON,
-  listCV,
-  someCV,
-  uintCV,
-} from '@stacks/transactions';
-import { CONTRACT_ADDRESSS, CONTRACT_NAME } from '../../stacks';
+
 import { StacksMainnet } from '@stacks/network';
-import { principalCV } from '@stacks/transactions/dist/clarity/types/principalCV';
+import { uintCV, callReadOnlyFunction, cvToJSON } from '@stacks/transactions';
+import { CONTRACT_ADDRESSS, CONTRACT_NAME, getLatestTxFromBoard } from '../../stacks';
+
+const STACKS_API = "https://stacks-node-api.mainnet.stacks.co/";
+const senderAddress = "SP3D03X5BHMNSAAW71NN7BQRMV4DW2G4JB3MZAGJ8"
+
+export const fetchBoardIndex = async (senderAddress: string) => {
+  try {
+    const network = new StacksMainnet();
+    const functionName = "get-board-index";
+    const contractAddress = CONTRACT_ADDRESSS;
+    const contractName = CONTRACT_NAME;
+    const functionArgs: any = [];
+
+    const options: any = {
+      contractAddress,
+      contractName,
+      functionName,
+      functionArgs,
+      network,
+      senderAddress,
+    };
+
+    const response = await callReadOnlyFunction(options);
+    const jsonResponse = cvToJSON(response);
+    const value = jsonResponse.value;
+    return parseInt(value);
+  } catch (err) {
+    console.log("fetchBoardIndex err :(", err);
+    return null;
+  }
+};
 
 const addAmount = async () => {
-  // get all the collections
-  const collections = await redis.hGetAll('3:COLLECTION');
-  // get the new balance of token in the collection
-  let index = 0;
-  const nftsToCheckBalance: any = [];
-  Object.keys(collections).forEach(async (key) => {
+  const boardIndex = await fetchBoardIndex(senderAddress);
+  const collections = await redis.hGetAll(boardIndex.toString());
+
+  for (const key in collections) {
     const parsedCollection = JSON.parse(collections[key]);
 
-    const [collectionAddress, collectionName] = key.split('.');
+    for (const token in parsedCollection) {
+      const tokenId = token;
+      const collectionId = key;
+      const rawCollection = await redis.hGet(boardIndex.toString(), `${collectionId}:::${tokenId}`);
+      const collection = JSON.parse(rawCollection as string);
 
-    const promise = await Promise.all(
-      Object.keys(parsedCollection).map((token) => {
-        const currentToken = parsedCollection[token];
-        const checked = currentToken.checked;
-        const collectionId = key;
+      const amount = collectionId.includes('baby-badgers') || collectionId.includes('btc-badgers-v2')
+        ? 24 // Set amount to 24 for baby and badgers collections
+        : 12; // Set amount to 12 for other collections
 
-        // if the max of 10 calls if reached, finish loop
-        if (nftsToCheckBalance.length > 10) return;
+      const data = {
+        ...collection,
+        [tokenId]: { amount: amount },
+      };
 
-        // is the token has been checked, return
-        if (checked) return;
+      await redis.hSet(boardIndex.toString(), `${collectionId}:::${tokenId}`, JSON.stringify(data));
+    }
+  }
 
-        // if the token has not been checked, add it to the list of tokens to check
-        if (nftsToCheckBalance.length === 0) {
-          return nftsToCheckBalance.push([
-            {
-              stxVal: someCV(uintCV(token)),
-              jsVal: token,
-              collection: key,
-            },
-          ]);
-        }
-
-        // check that the current items in the list have the same collection
-        // if they do, add the token to the list
-        // if they don't, create a new list and add the token to it
-
-        const current = nftsToCheckBalance[index];
-        const lastCollection = current[current.length - 1].collection;
-
-        if (lastCollection !== key) {
-          index = index + 1;
-          nftsToCheckBalance[index] = [
-            {
-              stxVal: someCV(uintCV(token)),
-              jsVal: token,
-              collection: key,
-            },
-          ];
-          return;
-        }
-
-        if (nftsToCheckBalance[index].length > 4) {
-          index = index + 1;
-          nftsToCheckBalance[index] = [
-            {
-              stxVal: someCV(uintCV(token)),
-              jsVal: token,
-              collection: key,
-            },
-          ];
-          return;
-        }
-        nftsToCheckBalance[index].push({
-          stxVal: someCV(uintCV(token)),
-          jsVal: token,
-          collection: key,
-        });
-        return nftsToCheckBalance;
-      })
-    ).then(() => {
-      return nftsToCheckBalance;
-    });
-
-    promise.forEach(async (list: any) => {
-
-      const listcv = listCV(list.map((x: any) => x.stxVal));
-      
-      // call the contract
-      try {
-        const readOnlyCallBoardIndex = await callReadOnlyFunction({
-          contractName: CONTRACT_NAME,
-          contractAddress: CONTRACT_ADDRESSS,
-          functionName: 'get-5-item-balance',
-          functionArgs: [principalCV(key), listcv],
-          senderAddress: 'SP2MYPTSQE3NN1HYDQWB1G06G20E6KFTDWWMEG93W',
-          network: new StacksMainnet(),
-        });
-        const cleanValue = cvToJSON(readOnlyCallBoardIndex).value.value;
-
-        console.log('cleanValue', cleanValue);
-        cleanValue.forEach(async (value: any, index: number) => {
-          const tileAmount = parseInt(value.value);
-          const tokenId = list[index].jsVal;
-          const collectionId = list[index].collection;
-          const rawCollection = await redis.hGet('3:COLLECTION', collectionId);
-          const collection = JSON.parse(rawCollection as string);
-
-          
-          const data = {
-            ...collection,
-            [tokenId]: { amount: tileAmount, checked: true },
-          };
-          console.log("valor>>>>",list[index], index, tileAmount, cleanValue, value, list.length)
-
-          // await redis.hSet('3:COLLECTION', collectionId, JSON.stringify(data));
-        });
-      } catch (error) {
-        console.log('error', error)
-      }
-    });
-  });
   console.log('done cron job');
   return 0;
 };
 
 export default addAmount;
+

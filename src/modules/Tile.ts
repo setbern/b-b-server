@@ -126,7 +126,7 @@ export const _addNewTile = async (params: AddNewTileProps) => {
       tiles: cleanUp,
       txId: params.txId,
       principal: params.principal,
-      collectionId: 2,
+      collectionId: 3,
     };
 
     const keyName = params.txId;
