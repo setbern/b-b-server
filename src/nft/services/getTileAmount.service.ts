@@ -1,55 +1,53 @@
 import redis from '../../redis';
+import { StacksMainnet } from '@stacks/network';
+import { uintCV, callReadOnlyFunction, cvToJSON } from '@stacks/transactions';
+import { CONTRACT_ADDRESSS, CONTRACT_NAME, getLatestTxFromBoard } from '../../stacks';
+
+const STACKS_API = "https://stacks-node-api.mainnet.stacks.co/";
+const senderAddress = "SP3D03X5BHMNSAAW71NN7BQRMV4DW2G4JB3MZAGJ8"
+
+export const fetchBoardIndex = async (senderAddress: string) => {
+  try {
+    const network = new StacksMainnet();
+    const functionName = "get-board-index";
+    const contractAddress = CONTRACT_ADDRESSS;
+    const contractName = CONTRACT_NAME;
+    const functionArgs: any = [];
+
+    const options: any = {
+      contractAddress,
+      contractName,
+      functionName,
+      functionArgs,
+      network,
+      senderAddress,
+    };
+
+    const response = await callReadOnlyFunction(options);
+    const jsonResponse = cvToJSON(response);
+    const value = jsonResponse.value;
+    return parseInt(value);
+  } catch (err) {
+    console.log("fetchBoardIndex err :(", err);
+    return null;
+  }
+};
 
 const getTileAmount = async (tokenId: string, collectionId: string) => {
-  // await redis.hSet(collectionId,tokenId, 12 )
+  const boardIndex = await fetchBoardIndex(senderAddress);
+  const rawAmount = await redis.hGet(boardIndex.toString(), `${collectionId}:::${tokenId}`);
 
-  const rawCollection = await redis.hGet('3:COLLECTION', collectionId);
-  if (!rawCollection) {
-    // get the tiles for that collection
-    if (
-      collectionId ===
-        'SP27F9EJH20K3GT6GHZG0RD08REZKY2TDMD6D9M2Z.baby-badgers' ||
-      collectionId ===
-        'SP27F9EJH20K3GT6GHZG0RD08REZKY2TDMD6D9M2Z.btc-badgers-v2'
-    ) {
-      const data = { [tokenId]: { amount: 12, checked: false } };
-      await redis.hSet('3:COLLECTION', collectionId, JSON.stringify(data));
-      return 12;
-    }
 
-    // save the new token id to that collection
+  if (!rawAmount) {
+    const initialAmount = collectionId.includes('baby-badgers') || collectionId.includes('btc-badgers-v2')
+      ? 24 // Set initial amount to 24 for baby and badgers collections
+      : 12; // Set initial amount to 12 for other collections
 
-    const data = { [tokenId]: { amount: 6, checked: false } };
-    await redis.hSet('3:COLLECTION', collectionId, JSON.stringify(data));
-    return 6;
+    await redis.hSet(boardIndex.toString(), `${collectionId}:::${tokenId}`, initialAmount.toString());
+    return initialAmount;
   }
 
-  const collection = JSON.parse(rawCollection);
-
-  // if the collection exists but the token id does not
-  if (!collection[tokenId]) {
-    if (
-      collectionId ===
-        'SP27F9EJH20K3GT6GHZG0RD08REZKY2TDMD6D9M2Z.baby-badgers' ||
-      collectionId ===
-        'SP27F9EJH20K3GT6GHZG0RD08REZKY2TDMD6D9M2Z.btc-badgers-v2'
-    ) {
-      const data = { ...collection, [tokenId]: { amount: 12, checked: false } };
-      await redis.hSet('3:COLLECTION', collectionId, JSON.stringify(data));
-      return 12;
-    }
-
-    // save the new token id to that collection
-
-    const data = { ...collection, [tokenId]: { amount: 6, checked: false } };
-    await redis.hSet('3:COLLECTION', collectionId, JSON.stringify(data));
-    return 6;
-  }
-
-  // get amount from NFT
-  const amount = collection[tokenId].amount;
-
-  return parseInt(amount);
+  return parseInt(rawAmount);
 };
 
 export default getTileAmount;

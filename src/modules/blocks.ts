@@ -1,6 +1,8 @@
+import { StacksMainnet } from '@stacks/network';
+import { uintCV, callReadOnlyFunction, cvToJSON } from '@stacks/transactions';
 import substractAmount from '../nft/services/substractAmount.service';
 import redis from '../redis';
-import { getLatestTxFromBoard } from '../stacks';
+import { CONTRACT_ADDRESSS, CONTRACT_NAME, getLatestTxFromBoard } from '../stacks';
 import { fetchHash, getKeyAtHash } from './RedisHelpers';
 import {
   APPROVED_TILE,
@@ -10,7 +12,13 @@ import {
   PENDING_TX,
 } from './Tile';
 
+
+const STACKS_API = "https://stacks-node-api.mainnet.stacks.co/";
 const boardId = '3';
+const senderAddress = "SP3D03X5BHMNSAAW71NN7BQRMV4DW2G4JB3MZAGJ8"
+const contract_address = "SP3D03X5BHMNSAAW71NN7BQRMV4DW2G4JB3MZAGJ8"
+
+
 export const checkLatestBlock = async () => {
   // last processed block
   const latestBlockHeight = await redis.get(`${boardId}:LATEST_BLOCK`);

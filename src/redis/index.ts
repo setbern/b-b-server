@@ -3,8 +3,8 @@ import { createClient } from "redis";
 const redis = createClient({
   url: process.env.REDIS_URL,
   socket: {
-    tls: true,
-    rejectUnauthorized: false,
+    tls: false,
+    // rejectUnauthorized: false,
     keepAlive: 900000000000,
     reconnectStrategy() {
       console.log("reconnectStrategy");
