@@ -1,41 +1,42 @@
-import './env';
+import "./env";
 
-import fastify from 'fastify';
-import { fastifyCors } from '@fastify/cors';
-import fastifyIO from 'fastify-socket.io';
+import fastify from "fastify";
+import { fastifyCors } from "@fastify/cors";
+import fastifyIO from "fastify-socket.io";
 
-import { startUpWebSocket } from './websockets';
+import { startUpWebSocket } from "./websockets";
 
-import redis from './redis';
+import redis from "./redis";
 import {
   EXISTING_SELECTED_TILE,
   fetchAllTiles,
   fetchPendingTilesByAddress,
   PENDING_SELECTED_TILE,
-  _addNewTile,
   fetchUsedTilesByAddress,
-} from './modules/Tile';
+} from "./modules/Tile";
 import {
   checkLatestSuccesfultx,
   checkPendingByAddress,
   checkPendingTiles,
   createNewCollection,
   startCollection,
-} from './modules/collection';
-import cron from 'node-cron';
-import newBoard from './board/controllers/initiate-board';
-import placeTiles from './tiles/controllers/place-tiles';
-import tileAmount from './nft/controllers/get-tile-amount';
-import addAmount from './nft/services/addAmount.service';
-import updateTileAmount from './nft/controllers/update-tile-amount';
-import addAmountTest from './nft/services/addAmountTest.service';
-import { checkLatestBlock } from './modules/blocks';
+} from "./modules/collection";
+import cron from "node-cron";
+import newBoard from "./board/controllers/initiate-board";
+import placeTiles from "./tiles/controllers/place-tiles";
+import tileAmount from "./nft/controllers/get-tile-amount";
+import addAmount from "./nft/services/addAmount.service";
+import updateTileAmount from "./nft/controllers/update-tile-amount";
+import addAmountTest from "./nft/services/addAmountTest.service";
+import { checkLatestBlock } from "./modules/blocks";
+import fetchActiveTiles from "./tiles/controllers/fetch-active-tiles";
+import { addFakeCheckTiles } from "./tiles/services/fetchActiveTiles";
 
-const isHeroku = process.env.NODE_ENV === 'production';
+const isHeroku = process.env.NODE_ENV === "production";
 const localPot = 3002;
-const port = isHeroku ? parseInt(process.env.PORT || '3001', 10) || 3002 : 3002;
+const port = isHeroku ? parseInt(process.env.PORT || "3001", 10) || 3002 : 3002;
 
-export const TEST_REDIS_CHANNEL = 'b-b-board';
+export const TEST_REDIS_CHANNEL = "b-b-board";
 
 export interface PostTile {
   position: number;
@@ -54,42 +55,42 @@ const startServer = () => {
     logger: true,
     ajv: {
       customOptions: {
-        coerceTypes: 'array',
+        coerceTypes: "array",
       },
     },
   });
 
   server.register(fastifyCors, {
     origin: [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'https://badger-board.vercel.app',
-      'https://badger-board-git-dev-setteam.vercel.app',
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "https://badger-board.vercel.app",
+      "https://badger-board-git-dev-setteam.vercel.app",
     ],
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   });
   server.register(fastifyIO, {
     cors: {
       origin: [
-        'http://localhost:3000',
-        'http://localhost:3001',
-        'https://badger-board.vercel.app',
-        'https://badger-board-git-dev-setteam.vercel.app',
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "https://badger-board.vercel.app",
+        "https://badger-board-git-dev-setteam.vercel.app",
       ],
-      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     },
   });
 
   server.get<{
     Reply: { tiles: EXISTING_SELECTED_TILE };
-  }>('/tiles', {}, async (request, reply) => {
+  }>("/tiles", {}, async (request, reply) => {
     const tiles = await fetchAllTiles();
     reply.send({ tiles });
   });
 
   server.get<{
     Reply: { tiles: PENDING_SELECTED_TILE };
-  }>('/pending-tiles', {}, async (req: any, reply) => {
+  }>("/pending-tiles", {}, async (req: any, reply) => {
     const address = req.query.address;
     if (address) {
       const tiles = await fetchPendingTilesByAddress(address);
@@ -100,7 +101,7 @@ const startServer = () => {
 
   server.get<{
     Reply: { tiles: number };
-  }>('/used-tiles', {}, async (req: any, reply) => {
+  }>("/used-tiles", {}, async (req: any, reply) => {
     const address = req.query.address;
     if (address) {
       const tiles = await fetchUsedTilesByAddress(address);
@@ -111,34 +112,34 @@ const startServer = () => {
 
   server.post<{
     Reply: { status: string; collectionId: number };
-  }>('/newCollection', {}, async (req, reply) => {
+  }>("/newCollection", {}, async (req, reply) => {
     return createNewCollection();
   });
 
   server.post<{
     Reply: { status: string };
-  }>('/checkPending', {}, async (req, reply) => {
+  }>("/checkPending", {}, async (req, reply) => {
     return checkPendingTiles();
   });
 
   server.get<{
     Reply: { status: string; pending: any };
-  }>('/checkPendingByAddress', {}, async (req, reply) => {
-    const pending = await checkPendingByAddress('1');
+  }>("/checkPendingByAddress", {}, async (req, reply) => {
+    const pending = await checkPendingByAddress("1");
 
-    reply.send({ status: 'ok', pending });
+    reply.send({ status: "ok", pending });
   });
 
   server.post<{
     Reply: { status: string };
     Body: string;
   }>(
-    '/startCollection',
+    "/startCollection",
     {
       preValidation: (req, reply, done) => {
         const { collectionId } = req.body as any;
         if (!collectionId) {
-          reply.code(400).send({ status: 'missing collectionId' });
+          reply.code(400).send({ status: "missing collectionId" });
           return;
         }
         done();
@@ -153,7 +154,7 @@ const startServer = () => {
   void server.register(newBoard);
 
   void server.register(placeTiles);
-
+  void server.register(fetchActiveTiles);
   void server.register(tileAmount);
   void server.register(updateTileAmount);
   /*
@@ -203,87 +204,88 @@ const startServer = () => {
   );
   */
 
-  server.get('/', (req, reply) => {
-    server.io.to('room1').emit('message', { hello: 'world' });
-    return 'yeet';
+  server.get("/", (req, reply) => {
+    server.io.to("room1").emit("message", { hello: "world" });
+    return "yeet";
   });
 
   server.ready().then(() => {
     // we need to wait for the server to be ready, else `server.io` is undefined
-    server.io.on('connection', (socket) => {
+    server.io.on("connection", (socket) => {
       socket.join(TEST_REDIS_CHANNEL);
 
-      socket.on('message', (data) => {
-        socket.emit('hello', 'what is going on');
+      socket.on("message", (data) => {
+        socket.emit("hello", "what is going on");
       });
 
-      socket.on('disconnect', () => {
-        console.log('user disconnected');
+      socket.on("disconnect", () => {
+        console.log("user disconnected");
       });
     });
 
     (async () => {
       const subscribeClient = redis.duplicate();
 
-      redis.on('error', (err) => {
+      redis.on("error", (err) => {
         console.error(`Redis subscribeClient  err ${err}`);
         //redis.connect();
       });
-      redis.on('reconnecting', (params) =>
+      redis.on("reconnecting", (params) =>
         console.info(
           `Redis subscribeClient reconnecting, attempt ${params?.attempt}`
         )
       );
 
-      redis.on('connect', () =>
-        console.info('Redis subscribeClient connected')
+      redis.on("connect", () =>
+        console.info("Redis subscribeClient connected")
       );
-      redis.on('ready', () => console.info('Redis subscribeClient ready'));
-      redis.on('end', () =>
-        console.info('Redis subscribeClient connection closed')
+      redis.on("ready", () => console.info("Redis subscribeClient ready"));
+      redis.on("end", () =>
+        console.info("Redis subscribeClient connection closed")
       );
 
       await redis.connect();
       await subscribeClient.connect();
 
-      await subscribeClient.subscribe('b-b-board', async (tiles: string) => {
+      await subscribeClient.subscribe("b-b-board", async (tiles: string) => {
         server.io
           .to(TEST_REDIS_CHANNEL)
-          .emit('b-b-board', { latestTiles: tiles });
+          .emit("b-b-board", { latestTiles: tiles });
       });
 
       await subscribeClient.subscribe(
-        'b-b-board-pending',
+        "b-b-board-pending",
         async (tiles: string) => {
           server.io
             .to(TEST_REDIS_CHANNEL)
-            .emit('b-b-board-pending', { latestTiles: tiles });
+            .emit("b-b-board-pending", { latestTiles: tiles });
         }
       );
     })();
   });
 
-  server.listen({ port: port, host: '0.0.0.0' }, (err, address) => {
+  server.listen({ port: port, host: "0.0.0.0" }, (err, address) => {
     if (err) {
       console.error(err);
       process.exit(1);
     }
     startUpWebSocket();
     // checkLatestSuccesfultx();
-    checkLatestBlock()
+    checkLatestBlock();
+    //addFakeCheckTiles();
   });
 };
 
-cron.schedule(
-  '*/5 * * * *',
-  () => {
-    // runs every 5 minutes
-    checkLatestBlock()
-  },
-  {
-    scheduled: true,
-    timezone: 'America/New_York',
-  }
-);
+// cron.schedule(
+//   '*/5 * * * *',
+//   () => {
+//     // runs every 5 minutes
+//     checkLatestBlock()
+//   },
+//   {
+//     scheduled: true,
+//     timezone: 'America/New_York',
+//   }
+// );
 
 startServer();

@@ -1,6 +1,5 @@
 import fastify, { FastifyPluginAsync } from "fastify";
 import { BBHeaders } from "../types";
-import { _addNewTile } from "../../modules/Tile";
 import place from "../services/placeTiles.service";
 
 const placeTiles: FastifyPluginAsync = async (fastify, _opts) => {

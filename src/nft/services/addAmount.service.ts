@@ -1,11 +1,15 @@
-import redis from '../../redis';
+import redis from "../../redis";
 
-import { StacksMainnet } from '@stacks/network';
-import { uintCV, callReadOnlyFunction, cvToJSON } from '@stacks/transactions';
-import { CONTRACT_ADDRESSS, CONTRACT_NAME, getLatestTxFromBoard } from '../../stacks';
+import { StacksMainnet } from "@stacks/network";
+import { uintCV, callReadOnlyFunction, cvToJSON } from "@stacks/transactions";
+import {
+  CONTRACT_ADDRESSS,
+  CONTRACT_NAME,
+  getLatestTxFromBoard,
+} from "../../stacks";
 
 const STACKS_API = "https://stacks-node-api.mainnet.stacks.co/";
-const senderAddress = "SP3D03X5BHMNSAAW71NN7BQRMV4DW2G4JB3MZAGJ8"
+const senderAddress = "SP3D03X5BHMNSAAW71NN7BQRMV4DW2G4JB3MZAGJ8";
 
 export const fetchBoardIndex = async (senderAddress: string) => {
   try {
@@ -36,6 +40,10 @@ export const fetchBoardIndex = async (senderAddress: string) => {
 
 const addAmount = async () => {
   const boardIndex = await fetchBoardIndex(senderAddress);
+  if (!boardIndex) {
+    console.log("no board index");
+    return 0;
+  }
   const collections = await redis.hGetAll(boardIndex.toString());
 
   for (const key in collections) {
@@ -44,25 +52,33 @@ const addAmount = async () => {
     for (const token in parsedCollection) {
       const tokenId = token;
       const collectionId = key;
-      const rawCollection = await redis.hGet(boardIndex.toString(), `${collectionId}:::${tokenId}`);
+      const rawCollection = await redis.hGet(
+        boardIndex.toString(),
+        `${collectionId}:::${tokenId}`
+      );
       const collection = JSON.parse(rawCollection as string);
 
-      const amount = collectionId.includes('baby-badgers') || collectionId.includes('btc-badgers-v2')
-        ? 24 // Set amount to 24 for baby and badgers collections
-        : 12; // Set amount to 12 for other collections
+      const amount =
+        collectionId.includes("baby-badgers") ||
+        collectionId.includes("btc-badgers-v2")
+          ? 24 // Set amount to 24 for baby and badgers collections
+          : 12; // Set amount to 12 for other collections
 
       const data = {
         ...collection,
         [tokenId]: { amount: amount },
       };
 
-      await redis.hSet(boardIndex.toString(), `${collectionId}:::${tokenId}`, JSON.stringify(data));
+      await redis.hSet(
+        boardIndex.toString(),
+        `${collectionId}:::${tokenId}`,
+        JSON.stringify(data)
+      );
     }
   }
 
-  console.log('done cron job');
+  console.log("done cron job");
   return 0;
 };
 
 export default addAmount;
-

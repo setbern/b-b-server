@@ -1,17 +1,15 @@
 import { FastifyPluginAsync } from "fastify";
-import { _addNewTile } from "../../modules/Tile";
 import getTileAmount from "../services/getTileAmount.service";
 
 const tileAmount: FastifyPluginAsync = async (fastify, _opts) => {
   fastify.post<{
     Body: string;
-    Reply: { status?: string, amount?: number };
+    Reply: { status?: string; amount?: number };
   }>(
     "/tile-amount",
     {
       preValidation: (req, reply, done) => {
-
-        const { tokenId, collection }:any = req.body;
+        const { tokenId, collection }: any = req.body;
 
         // check if their is a missing field and return a 400 with the missing one
         if (!tokenId) {
@@ -26,9 +24,9 @@ const tileAmount: FastifyPluginAsync = async (fastify, _opts) => {
       },
     },
     async (req, reply) => {
-      const { collection, tokenId }:any = req.body;
-      const amount = await getTileAmount(tokenId, collection)
-      return {amount: amount}
+      const { collection, tokenId }: any = req.body;
+      const amount = await getTileAmount(tokenId, collection);
+      return { amount: amount };
     }
   );
 };

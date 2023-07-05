@@ -31,28 +31,7 @@ export interface AddNewTileProps extends PostTilesQuery {
   server: any;
 }
 
-export const testTilesContractKey = "3:APPROVED";
-export const testPendingContractKey = "3:PENDING";
-
-export enum COLLECTION_STATUS {
-  APPROVED = "APPROVED",
-  PENDING = "PENDING",
-  REJECTED = "REJECTED",
-}
-
-export const COLLECTION_KEY_GEN = (
-  collectionId: number,
-  status: COLLECTION_STATUS
-) => `${collectionId}:${status}`;
-/*
- new add new tile
-  .5) get the current block
-  1) get information in right format for adding to redis
-*/
-
-export const collectionsHashKey = "COLLECTIONS";
-
-type AddNewTile = {
+export type AddNewTile = {
   txId: string;
   principal: string;
   tiles: Tile_[];
@@ -74,7 +53,7 @@ export type TILE_HISTORY = {
   principal: string;
   created_at: string;
 };
-``;
+
 export type SELECTED_TILE = {
   id: number;
   color: string;
@@ -112,6 +91,48 @@ export type PENDING_TILE = {
   collection?: string;
 };
 
+export type SELECTED_TILE_NEW = {
+  id: number;
+  x: number;
+  y: number;
+  color: string;
+  history: TILE_HISTORY[];
+};
+
+export type EXISTING_SELECTED_TILE = {
+  [key: number]: SELECTED_TILE_NEW;
+};
+
+export type APPROVED_SELECTED_TILE = {
+  [key: number]: APPROVED_TILE;
+};
+
+export type PENDING_SELECTED_TILE = {
+  [key: number]: SELECTED_TILE_PENDING;
+};
+
+export type SELECTED_TILE_PENDING = {
+  id: number;
+  color: string;
+  history: TILE_HISTORY[];
+};
+
+export const testTilesContractKey = "3:APPROVED";
+export const testPendingContractKey = "3:PENDING";
+
+export enum COLLECTION_STATUS {
+  APPROVED = "APPROVED",
+  PENDING = "PENDING",
+  REJECTED = "REJECTED",
+}
+
+export const COLLECTION_KEY_GEN = (
+  collectionId: number,
+  status: COLLECTION_STATUS
+) => `${collectionId}:${status}`;
+
+export const collectionsHashKey = "COLLECTIONS";
+
 export const _addNewTile = async (params: AddNewTileProps) => {
   try {
     const tilesClean = params.tiles as Tile[];
@@ -144,32 +165,6 @@ export const _addNewTile = async (params: AddNewTileProps) => {
   }
 };
 
-export type SELECTED_TILE_NEW = {
-  id: number;
-  x: number;
-  y: number;
-  color: string;
-  history: TILE_HISTORY[];
-};
-
-export type EXISTING_SELECTED_TILE = {
-  [key: number]: SELECTED_TILE_NEW;
-};
-
-export type APPROVED_SELECTED_TILE = {
-  [key: number]: APPROVED_TILE;
-};
-
-export type PENDING_SELECTED_TILE = {
-  [key: number]: SELECTED_TILE_PENDING;
-};
-
-export type SELECTED_TILE_PENDING = {
-  id: number;
-  color: string;
-  history: TILE_HISTORY[];
-};
-
 export const fetchAllTiles = async () => {
   try {
     const items = await redis.hGetAll(testTilesContractKey);
@@ -177,12 +172,10 @@ export const fetchAllTiles = async () => {
     let parsed: EXISTING_SELECTED_TILE = {};
 
     for (const tile in items) {
-
       const _parsed = JSON.parse(items[tile]) as SELECTED_TILE_NEW;
 
       parsed[_parsed.id] = _parsed;
     }
-
 
     return parsed;
   } catch (err) {
